@@ -1,16 +1,14 @@
 {
   "name": "vrchat-world-manager",
   "version": "1.0.0",
-  "main": "dist/main.js",
+  "main": "dist-electron/main.js",
   "directories": {
     "doc": "doc"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "start": "npm run build && electron-forge start",
-    "package": "npm run build && electron-forge package",
-    "make": "npm run build && electron-forge make"
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
   },
   "author": "",
   "license": "ISC",
@@ -24,12 +22,27 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.10.2",
     "@electron-forge/plugin-fuses": "^7.10.2",
     "@electron/fuses": "^1.8.0",
+    "@tailwindcss/postcss": "^4.1.17",
     "@types/electron": "^1.4.38",
     "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "autoprefixer": "^10.4.22",
     "electron": "^39.2.3",
-    "typescript": "^5.9.3"
+    "postcss": "^8.5.6",
+    "prisma": "5.22.0",
+    "tailwindcss": "^4.1.17",
+    "typescript": "^5.9.3",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6"
   },
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
+    "@prisma/client": "5.22.0",
+    "axios": "^1.13.2",
+    "electron-squirrel-startup": "^1.0.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.9.6"
   }
 }

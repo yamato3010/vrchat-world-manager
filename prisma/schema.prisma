@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model World {
+  id              Int      @id @default(autoincrement())
+  vrchatWorldId   String?  @unique // Optional for manual entries
+  name            String
+  authorName      String?
+  description     String?
+  thumbnailUrl    String?
+  userMemo        String?
+  tags            String?  // JSON string or comma-separated
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  groups          WorldOnGroup[]
+}
+
+model Group {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  icon        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  worlds      WorldOnGroup[]
+}
+
+model WorldOnGroup {
+  worldId Int
+  groupId Int
+  world   World @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  group   Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([worldId, groupId])
+}
