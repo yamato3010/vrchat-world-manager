@@ -23,6 +23,7 @@
     "@electron-forge/plugin-fuses": "^7.10.2",
     "@electron/fuses": "^1.8.0",
     "@tailwindcss/postcss": "^4.1.17",
+    "@tailwindcss/vite": "^4.1.17",
     "@types/electron": "^1.4.38",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
