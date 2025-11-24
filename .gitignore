@@ -13,3 +13,5 @@ coverage/
 .DS_Store
 .vscode/
 *.log
+electron/**/*.js
+electron/**/*.d.ts
