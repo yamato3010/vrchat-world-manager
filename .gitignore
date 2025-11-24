@@ -1,4 +1,6 @@
 node_modules
+dist-electron/
+dist/
 
 out/
 /src/generated/prisma
@@ -15,3 +17,4 @@ coverage/
 *.log
 electron/**/*.js
 electron/**/*.d.ts
+*.tsbuildinfo
