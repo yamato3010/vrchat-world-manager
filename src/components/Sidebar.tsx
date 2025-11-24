@@ -1,18 +1,29 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Group } from '../types'
 
 interface SidebarProps {
     activeView: 'all' | 'group'
     activeGroupId?: number
     onNavigate: (view: 'all' | 'group', groupId?: number) => void
     onAddGroup: () => void
+    refreshTrigger?: number // Add refresh trigger to reload groups
 }
 
-export function Sidebar({ activeView, activeGroupId, onNavigate, onAddGroup }: SidebarProps) {
-    // Placeholder for groups - in Phase 1.5 we might not have groups fully working in UI yet
-    // but we should prepare the structure.
-    const [groups] = useState<{ id: number; name: string }[]>([
-        // Mock data for UI dev, or empty if we want to fetch real data later
-    ])
+export function Sidebar({ activeView, activeGroupId, onNavigate, onAddGroup, refreshTrigger }: SidebarProps) {
+    const [groups, setGroups] = useState<Group[]>([])
+
+    useEffect(() => {
+        loadGroups()
+    }, [refreshTrigger])
+
+    const loadGroups = async () => {
+        try {
+            const data = await window.electronAPI.getGroups()
+            setGroups(data)
+        } catch (error) {
+            console.error('Failed to load groups:', error)
+        }
+    }
 
     return (
         <aside className="w-64 bg-gray-800 flex flex-col h-full border-r border-gray-700">
@@ -32,20 +43,25 @@ export function Sidebar({ activeView, activeGroupId, onNavigate, onAddGroup }: S
                         </button>
                     </li>
 
-                    <li className="pt-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Groups
+                    <li className="pt-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider flex justify-between items-center">
+                        <span>Groups</span>
                     </li>
 
                     {groups.map((group) => (
                         <li key={group.id}>
                             <button
                                 onClick={() => onNavigate('group', group.id)}
-                                className={`w-full text-left px-4 py-2 hover:bg-gray-700 transition-colors ${activeView === 'group' && activeGroupId === group.id
+                                className={`w-full text-left px-4 py-2 hover:bg-gray-700 transition-colors flex justify-between items-center ${activeView === 'group' && activeGroupId === group.id
                                         ? 'bg-gray-700 text-purple-400 font-medium'
                                         : 'text-gray-300'
                                     }`}
                             >
-                                {group.name}
+                                <span className="truncate">{group.name}</span>
+                                {group._count && group._count.worlds > 0 && (
+                                    <span className="text-xs bg-gray-600 px-2 py-0.5 rounded-full text-gray-300">
+                                        {group._count.worlds}
+                                    </span>
+                                )}
                             </button>
                         </li>
                     ))}

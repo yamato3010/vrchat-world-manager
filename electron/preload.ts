@@ -5,6 +5,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     createWorld: (data: any) => ipcRenderer.invoke('create-world', data),
     deleteWorld: (id: number) => ipcRenderer.invoke('delete-world', id),
     fetchVRChatWorld: (worldId: string) => ipcRenderer.invoke('fetch-vrchat-world', worldId),
+
+    // Group API
+    getGroups: () => ipcRenderer.invoke('get-groups'),
+    createGroup: (data: any) => ipcRenderer.invoke('create-group', data),
+    updateGroup: (id: number, data: any) => ipcRenderer.invoke('update-group', { id, data }),
+    deleteGroup: (id: number) => ipcRenderer.invoke('delete-group', id),
+    addWorldToGroup: (worldId: number, groupId: number) => ipcRenderer.invoke('add-world-to-group', { worldId, groupId }),
+    removeWorldFromGroup: (worldId: number, groupId: number) => ipcRenderer.invoke('remove-world-from-group', { worldId, groupId }),
 })
 
 console.log('Preload script loaded');

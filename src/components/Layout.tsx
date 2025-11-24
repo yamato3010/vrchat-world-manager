@@ -8,6 +8,7 @@ interface LayoutProps {
     onNavigate: (view: 'all' | 'group', groupId?: number) => void
     onAddGroup: () => void
     onAddWorld: () => void
+    refreshTrigger?: number
 }
 
 export function Layout({
@@ -16,7 +17,8 @@ export function Layout({
     activeGroupId,
     onNavigate,
     onAddGroup,
-    onAddWorld
+    onAddWorld,
+    refreshTrigger
 }: LayoutProps) {
     return (
         <div className="flex h-screen bg-gray-900 text-white overflow-hidden">
@@ -25,6 +27,7 @@ export function Layout({
                 activeGroupId={activeGroupId}
                 onNavigate={onNavigate}
                 onAddGroup={onAddGroup}
+                refreshTrigger={refreshTrigger}
             />
 
             <div className="flex-1 flex flex-col min-w-0">

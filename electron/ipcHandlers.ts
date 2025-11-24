@@ -40,6 +40,59 @@ export function registerIpcHandlers() {
         return prisma.world.delete({ where: { id } })
     })
 
+    // Group CRUD
+    ipcMain.handle('get-groups', async () => {
+        return prisma.group.findMany({
+            include: {
+                _count: {
+                    select: { worlds: true },
+                },
+            },
+        })
+    })
+
+    ipcMain.handle('create-group', async (_, data: { name: string; description?: string; icon?: string }) => {
+        return prisma.group.create({
+            data: {
+                name: data.name,
+                description: data.description,
+                icon: data.icon,
+            },
+        })
+    })
+
+    ipcMain.handle('update-group', async (_, { id, data }: { id: number; data: any }) => {
+        return prisma.group.update({
+            where: { id },
+            data,
+        })
+    })
+
+    ipcMain.handle('delete-group', async (_, id: number) => {
+        return prisma.group.delete({ where: { id } })
+    })
+
+    // World-Group Association
+    ipcMain.handle('add-world-to-group', async (_, { worldId, groupId }: { worldId: number; groupId: number }) => {
+        return prisma.worldOnGroup.create({
+            data: {
+                worldId,
+                groupId,
+            },
+        })
+    })
+
+    ipcMain.handle('remove-world-from-group', async (_, { worldId, groupId }: { worldId: number; groupId: number }) => {
+        return prisma.worldOnGroup.delete({
+            where: {
+                worldId_groupId: {
+                    worldId,
+                    groupId,
+                },
+            },
+        })
+    })
+
     // VRChat API
     ipcMain.handle('fetch-vrchat-world', async (_, worldId: string) => {
         try {

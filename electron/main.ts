@@ -40,6 +40,7 @@ app.on('activate', () => {
 
 import { registerIpcHandlers } from './ipcHandlers'
 
+// Register IPC handlers before app is ready
 registerIpcHandlers()
 
 app.whenReady().then(createWindow)
