@@ -1,0 +1,70 @@
+// ユーザーデータ（今回はローカルアプリなので1ユーザー前提だけど、拡張性を考慮）
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   @default("User")
+  // ...
+}
+
+// -------------------------------------------------------
+// 1. ワールド情報（メイン）
+// -------------------------------------------------------
+model World {
+  id          Int      @id @default(autoincrement())
+  vrchatWorldId String   @unique  // wrld_xxx... (VRChat固有のID)
+  name        String
+  description String?
+  authorName  String?
+  thumbnailUrl String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // リレーション設定
+  photos      Photo[]         // このワールドで撮った写真たち
+  groups      WorldOnGroup[]  // このワールドが入っているグループたち
+}
+
+// -------------------------------------------------------
+// 2. 写真情報
+// -------------------------------------------------------
+model Photo {
+  id        Int      @id @default(autoincrement())
+  filePath  String   // ローカルのファイルパス
+  takenAt   DateTime? // 撮影日時
+
+  // どのワールドで撮ったか
+  worldId   Int
+  world     World    @relation(fields: [worldId], references: [id])
+}
+
+// -------------------------------------------------------
+// 3. グループ（フォルダ）情報 【今回追加！】
+// -------------------------------------------------------
+model Group {
+  id          Int      @id @default(autoincrement())
+  name        String   // グループ名（例：ホラー、行きたい所）
+  description String?  // メモ
+  icon        String?  // フォルダアイコンとか設定したい場合用
+
+  createdAt   DateTime @default(now())
+
+  // リレーション設定
+  worlds      WorldOnGroup[] // このグループに入っているワールドたち
+}
+
+// -------------------------------------------------------
+// 4. 中間テーブル（ワールドとグループの紐付け）
+// -------------------------------------------------------
+// これがあることで、1つのワールドを複数のグループに入れられる
+model WorldOnGroup {
+  worldId     Int
+  groupId     Int
+
+  world       World @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  group       Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  assignedAt  DateTime @default(now()) // いつリストに追加したか
+
+  // 複合主キー（同じワールドを同じグループに重複して入れないようにする）
+  @@id([worldId, groupId])
+}
