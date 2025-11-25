@@ -4,20 +4,21 @@ import { World } from '../types'
 interface WorldListProps {
     refreshTrigger: number
     onWorldClick: (worldId: number) => void
+    groupId?: number
 }
 
-export function WorldList({ refreshTrigger, onWorldClick }: WorldListProps) {
+export function WorldList({ refreshTrigger, onWorldClick, groupId }: WorldListProps) {
     const [worlds, setWorlds] = useState<World[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         loadWorlds()
-    }, [refreshTrigger])
+    }, [refreshTrigger, groupId])
 
     const loadWorlds = async () => {
         setLoading(true)
         try {
-            const data = await window.electronAPI.getWorlds()
+            const data = await window.electronAPI.getWorlds(groupId)
             setWorlds(data)
         } catch (error) {
             console.error('Failed to load worlds:', error)

@@ -49,7 +49,11 @@ function App() {
             {selectedWorldId ? (
                 <WorldDetail worldId={selectedWorldId} onBack={handleBackToList} />
             ) : (
-                <WorldList refreshTrigger={refreshTrigger} onWorldClick={handleWorldClick} />
+                <WorldList
+                    refreshTrigger={refreshTrigger}
+                    onWorldClick={handleWorldClick}
+                    groupId={activeView === 'group' ? activeGroupId : undefined}
+                />
             )}
 
             <AddWorldModal
