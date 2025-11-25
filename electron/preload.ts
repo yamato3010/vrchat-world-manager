@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getWorlds: (groupId?: number) => ipcRenderer.invoke('get-worlds', groupId),
     createWorld: (data: any) => ipcRenderer.invoke('create-world', data),
     deleteWorld: (id: number) => ipcRenderer.invoke('delete-world', id),
+    getWorldById: (id: number) => ipcRenderer.invoke('get-world-by-id', id),
     fetchVRChatWorld: (worldId: string) => ipcRenderer.invoke('fetch-vrchat-world', worldId),
 
     // Group API

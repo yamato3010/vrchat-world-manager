@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { WorldList } from './components/WorldList'
 import { AddWorldModal } from './components/AddWorldModal'
 import { AddGroupModal } from './components/AddGroupModal'
+import { WorldDetail } from './pages/WorldDetail'
 import { Layout } from './components/Layout'
 import './index.css'
 
@@ -11,6 +12,7 @@ function App() {
     const [refreshTrigger, setRefreshTrigger] = useState(0)
     const [activeView, setActiveView] = useState<'all' | 'group'>('all')
     const [activeGroupId, setActiveGroupId] = useState<number | undefined>(undefined)
+    const [selectedWorldId, setSelectedWorldId] = useState<number | null>(null)
 
     const handleWorldAdded = () => {
         setRefreshTrigger(prev => prev + 1)
@@ -23,6 +25,16 @@ function App() {
     const handleNavigate = (view: 'all' | 'group', groupId?: number) => {
         setActiveView(view)
         setActiveGroupId(groupId)
+        setSelectedWorldId(null) // Reset world detail when navigating
+    }
+
+    const handleWorldClick = (worldId: number) => {
+        setSelectedWorldId(worldId)
+    }
+
+    const handleBackToList = () => {
+        setSelectedWorldId(null)
+        setRefreshTrigger(prev => prev + 1) // Refresh list to show updated group assignments
     }
 
     return (
@@ -34,7 +46,11 @@ function App() {
             onAddWorld={() => setIsModalOpen(true)}
             refreshTrigger={refreshTrigger}
         >
-            <WorldList refreshTrigger={refreshTrigger} />
+            {selectedWorldId ? (
+                <WorldDetail worldId={selectedWorldId} onBack={handleBackToList} />
+            ) : (
+                <WorldList refreshTrigger={refreshTrigger} onWorldClick={handleWorldClick} />
+            )}
 
             <AddWorldModal
                 isOpen={isModalOpen}

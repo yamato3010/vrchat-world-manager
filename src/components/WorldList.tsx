@@ -3,9 +3,10 @@ import { World } from '../types'
 
 interface WorldListProps {
     refreshTrigger: number
+    onWorldClick: (worldId: number) => void
 }
 
-export function WorldList({ refreshTrigger }: WorldListProps) {
+export function WorldList({ refreshTrigger, onWorldClick }: WorldListProps) {
     const [worlds, setWorlds] = useState<World[]>([])
     const [loading, setLoading] = useState(true)
 
@@ -37,8 +38,8 @@ export function WorldList({ refreshTrigger }: WorldListProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
             {worlds.map((world) => (
-                <div key={world.id} className="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700">
-                    <div className="h-48 bg-gray-700 relative group">
+                <div key={world.id} className="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700 cursor-pointer hover:border-purple-500 transition-colors">
+                    <div className="h-48 bg-gray-700 relative group" onClick={() => onWorldClick(world.id)}>
                         {world.thumbnailUrl ? (
                             <img src={world.thumbnailUrl} alt={world.name} className="w-full h-full object-cover" />
                         ) : (
@@ -48,14 +49,17 @@ export function WorldList({ refreshTrigger }: WorldListProps) {
                         )}
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                             <button
-                                onClick={() => handleDelete(world.id)}
-                                className="bg-red-600 text-white px-3 py-1 rounded text-sm"
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleDelete(world.id)
+                                }}
+                                className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
                             >
                                 Delete
                             </button>
                         </div>
                     </div>
-                    <div className="p-4">
+                    <div className="p-4" onClick={() => onWorldClick(world.id)}>
                         <h3 className="font-bold text-lg truncate" title={world.name}>{world.name}</h3>
                         <p className="text-sm text-gray-400 truncate">{world.authorName}</p>
                         {world.userMemo && (

@@ -40,6 +40,19 @@ export function registerIpcHandlers() {
         return prisma.world.delete({ where: { id } })
     })
 
+    ipcMain.handle('get-world-by-id', async (_, id: number) => {
+        return prisma.world.findUnique({
+            where: { id },
+            include: {
+                groups: {
+                    include: {
+                        group: true,
+                    },
+                },
+            },
+        })
+    })
+
     // Group CRUD
     ipcMain.handle('get-groups', async () => {
         return prisma.group.findMany({
