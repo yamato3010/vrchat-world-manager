@@ -11,7 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getGroups: () => ipcRenderer.invoke('get-groups'),
     createGroup: (data: any) => ipcRenderer.invoke('create-group', data),
     updateGroup: (id: number, data: any) => ipcRenderer.invoke('update-group', { id, data }),
-    deleteGroup: (id: number) => ipcRenderer.invoke('delete-group', id),
+    deleteGroup: (id: number, deleteWorlds: boolean) => ipcRenderer.invoke('delete-group', { id, deleteWorlds }),
     addWorldToGroup: (worldId: number, groupId: number) => ipcRenderer.invoke('add-world-to-group', { worldId, groupId }),
     removeWorldFromGroup: (worldId: number, groupId: number) => ipcRenderer.invoke('remove-world-from-group', { worldId, groupId }),
 })

@@ -6,10 +6,11 @@ interface SidebarProps {
     activeGroupId?: number
     onNavigate: (view: 'all' | 'group', groupId?: number) => void
     onAddGroup: () => void
+    onDeleteGroup: (group: Group) => void
     refreshTrigger?: number // Add refresh trigger to reload groups
 }
 
-export function Sidebar({ activeView, activeGroupId, onNavigate, onAddGroup, refreshTrigger }: SidebarProps) {
+export function Sidebar({ activeView, activeGroupId, onNavigate, onAddGroup, onDeleteGroup, refreshTrigger }: SidebarProps) {
     const [groups, setGroups] = useState<Group[]>([])
 
     useEffect(() => {
@@ -48,20 +49,33 @@ export function Sidebar({ activeView, activeGroupId, onNavigate, onAddGroup, ref
                     </li>
 
                     {groups.map((group) => (
-                        <li key={group.id}>
+                        <li key={group.id} className="group/item relative">
                             <button
                                 onClick={() => onNavigate('group', group.id)}
                                 className={`w-full text-left px-4 py-2 hover:bg-gray-700 transition-colors flex justify-between items-center ${activeView === 'group' && activeGroupId === group.id
-                                        ? 'bg-gray-700 text-purple-400 font-medium'
-                                        : 'text-gray-300'
+                                    ? 'bg-gray-700 text-purple-400 font-medium'
+                                    : 'text-gray-300'
                                     }`}
                             >
-                                <span className="truncate">{group.name}</span>
-                                {group._count && group._count.worlds > 0 && (
-                                    <span className="text-xs bg-gray-600 px-2 py-0.5 rounded-full text-gray-300">
-                                        {group._count.worlds}
-                                    </span>
-                                )}
+                                <span className="truncate flex-1">{group.name}</span>
+                                <div className="flex items-center gap-2">
+                                    {group._count && group._count.worlds > 0 && (
+                                        <span className="text-xs bg-gray-600 px-2 py-0.5 rounded-full text-gray-300">
+                                            {group._count.worlds}
+                                        </span>
+                                    )}
+                                    <div
+                                        role="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            onDeleteGroup(group)
+                                        }}
+                                        className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-red-600 rounded transition-all text-gray-400 hover:text-white cursor-pointer"
+                                        title="Delete group"
+                                    >
+                                        🗑️
+                                    </div>
+                                </div>
                             </button>
                         </li>
                     ))}

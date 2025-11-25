@@ -3,16 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WorldList = WorldList;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
-function WorldList({ refreshTrigger, onWorldClick }) {
+function WorldList({ refreshTrigger, onWorldClick, groupId }) {
     const [worlds, setWorlds] = (0, react_1.useState)([]);
     const [loading, setLoading] = (0, react_1.useState)(true);
     (0, react_1.useEffect)(() => {
         loadWorlds();
-    }, [refreshTrigger]);
+    }, [refreshTrigger, groupId]);
     const loadWorlds = async () => {
         setLoading(true);
         try {
-            const data = await window.electronAPI.getWorlds();
+            const data = await window.electronAPI.getWorlds(groupId);
             setWorlds(data);
         }
         catch (error) {

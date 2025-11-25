@@ -7,6 +7,7 @@ interface LayoutProps {
     activeGroupId?: number
     onNavigate: (view: 'all' | 'group', groupId?: number) => void
     onAddGroup: () => void
+    onDeleteGroup: (group: any) => void
     onAddWorld: () => void
     refreshTrigger?: number
 }
@@ -17,6 +18,7 @@ export function Layout({
     activeGroupId,
     onNavigate,
     onAddGroup,
+    onDeleteGroup,
     onAddWorld,
     refreshTrigger
 }: LayoutProps) {
@@ -27,6 +29,7 @@ export function Layout({
                 activeGroupId={activeGroupId}
                 onNavigate={onNavigate}
                 onAddGroup={onAddGroup}
+                onDeleteGroup={onDeleteGroup}
                 refreshTrigger={refreshTrigger}
             />
 

@@ -81,8 +81,35 @@ export function registerIpcHandlers() {
         })
     })
 
-    ipcMain.handle('delete-group', async (_, id: number) => {
-        return prisma.group.delete({ where: { id } })
+    ipcMain.handle('delete-group', async (_, { id, deleteWorlds }: { id: number; deleteWorlds: boolean }) => {
+        if (deleteWorlds) {
+            // First, get all worlds in this group
+            const worldsInGroup = await prisma.worldOnGroup.findMany({
+                where: { groupId: id },
+                select: { worldId: true },
+            })
+
+            const worldIds = worldsInGroup.map(wog => wog.worldId)
+
+            // Delete the group (this will cascade delete WorldOnGroup entries)
+            await prisma.group.delete({ where: { id } })
+
+            // Delete all worlds that were in this group
+            if (worldIds.length > 0) {
+                await prisma.world.deleteMany({
+                    where: {
+                        id: {
+                            in: worldIds,
+                        },
+                    },
+                })
+            }
+        } else {
+            // Just delete the group (WorldOnGroup entries will be cascade deleted by Prisma)
+            await prisma.group.delete({ where: { id } })
+        }
+
+        return { success: true }
     })
 
     // World-Group Association
