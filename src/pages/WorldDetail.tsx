@@ -4,13 +4,21 @@ import { World, Group } from '../types'
 interface WorldDetailProps {
     worldId: number
     onBack: () => void
+    startInEditMode?: boolean
 }
 
-export function WorldDetail({ worldId, onBack }: WorldDetailProps) {
+export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldDetailProps) {
     const [world, setWorld] = useState<World | null>(null)
     const [groups, setGroups] = useState<Group[]>([])
     const [assignedGroupIds, setAssignedGroupIds] = useState<Set<number>>(new Set())
     const [loading, setLoading] = useState(true)
+    const [isEditing, setIsEditing] = useState(startInEditMode)
+    const [editData, setEditData] = useState({
+        name: '',
+        authorName: '',
+        description: '',
+        userMemo: '',
+    })
 
     useEffect(() => {
         loadWorldDetail()
@@ -22,6 +30,12 @@ export function WorldDetail({ worldId, onBack }: WorldDetailProps) {
             const data = await window.electronAPI.getWorldById(worldId)
             if (data) {
                 setWorld(data)
+                setEditData({
+                    name: data.name,
+                    authorName: data.authorName || '',
+                    description: data.description || '',
+                    userMemo: data.userMemo || '',
+                })
                 // Extract assigned group IDs from the world data
                 const groupIds = new Set<number>(
                     (data as any).groups?.map((wog: any) => wog.groupId as number) || []
@@ -62,6 +76,32 @@ export function WorldDetail({ worldId, onBack }: WorldDetailProps) {
         }
     }
 
+    const handleEdit = () => {
+        setIsEditing(true)
+    }
+
+    const handleCancelEdit = () => {
+        if (world) {
+            setEditData({
+                name: world.name,
+                authorName: world.authorName || '',
+                description: world.description || '',
+                userMemo: world.userMemo || '',
+            })
+        }
+        setIsEditing(false)
+    }
+
+    const handleSaveEdit = async () => {
+        try {
+            const updatedWorld = await window.electronAPI.updateWorld(worldId, editData)
+            setWorld(updatedWorld)
+            setIsEditing(false)
+        } catch (error) {
+            console.error('Failed to update world:', error)
+        }
+    }
+
     if (loading) {
         return <div className="flex items-center justify-center h-full">読み込み中...</div>
     }
@@ -89,25 +129,94 @@ export function WorldDetail({ worldId, onBack }: WorldDetailProps) {
                 )}
 
                 <div className="p-6">
-                    <h1 className="text-3xl font-bold mb-2">{world.name}</h1>
-                    {world.authorName && (
-                        <p className="text-gray-400 mb-4">作者: {world.authorName}</p>
+                    <div className="flex justify-between items-start mb-4">
+                        {isEditing ? (
+                            <input
+                                type="text"
+                                value={editData.name}
+                                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                                className="text-3xl font-bold bg-gray-700 rounded px-3 py-2 flex-1 mr-4"
+                            />
+                        ) : (
+                            <h1 className="text-3xl font-bold">{world.name}</h1>
+                        )}
+
+                        {!isEditing ? (
+                            <button
+                                onClick={handleEdit}
+                                className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition-colors"
+                            >
+                                編集
+                            </button>
+                        ) : (
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleCancelEdit}
+                                    className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded transition-colors"
+                                >
+                                    キャンセル
+                                </button>
+                                <button
+                                    onClick={handleSaveEdit}
+                                    className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded transition-colors"
+                                >
+                                    保存
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {isEditing ? (
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium mb-1">作者</label>
+                            <input
+                                type="text"
+                                value={editData.authorName}
+                                onChange={(e) => setEditData({ ...editData, authorName: e.target.value })}
+                                className="w-full bg-gray-700 rounded px-3 py-2"
+                            />
+                        </div>
+                    ) : (
+                        world.authorName && (
+                            <p className="text-gray-400 mb-4">作者: {world.authorName}</p>
+                        )
                     )}
 
-                    {world.description && (
+                    {isEditing ? (
                         <div className="mb-6">
-                            <h2 className="text-xl font-semibold mb-2">説明</h2>
-                            <p className="text-gray-300 whitespace-pre-wrap">{world.description}</p>
+                            <label className="block text-sm font-medium mb-1">説明</label>
+                            <textarea
+                                value={editData.description}
+                                onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                                className="w-full bg-gray-700 rounded px-3 py-2 h-32"
+                            />
                         </div>
+                    ) : (
+                        world.description && (
+                            <div className="mb-6">
+                                <h2 className="text-xl font-semibold mb-2">説明</h2>
+                                <p className="text-gray-300 whitespace-pre-wrap">{world.description}</p>
+                            </div>
+                        )
                     )}
 
-                    {world.userMemo && (
-                        <div className="mb-6 bg-gray-700 p-4 rounded">
-                            <h2 className="text-xl font-semibold mb-2 text-yellow-400">メモ</h2>
-                            <p className="text-gray-200 whitespace-pre-wrap">{world.userMemo}</p>
+                    {isEditing ? (
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium mb-1 text-yellow-400">メモ</label>
+                            <textarea
+                                value={editData.userMemo}
+                                onChange={(e) => setEditData({ ...editData, userMemo: e.target.value })}
+                                className="w-full bg-gray-700 rounded px-3 py-2 h-24"
+                            />
                         </div>
+                    ) : (
+                        world.userMemo && (
+                            <div className="mb-6 bg-gray-700 p-4 rounded">
+                                <h2 className="text-xl font-semibold mb-2 text-yellow-400">メモ</h2>
+                                <p className="text-gray-200 whitespace-pre-wrap">{world.userMemo}</p>
+                            </div>
+                        )
                     )}
-
                     <div className="mb-6">
                         <h2 className="text-xl font-semibold mb-4">グループに割り当て</h2>
                         {groups.length === 0 ? (

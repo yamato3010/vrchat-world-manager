@@ -17,6 +17,7 @@ function App() {
     const [activeView, setActiveView] = useState<'all' | 'group'>('all')
     const [activeGroupId, setActiveGroupId] = useState<number | undefined>(undefined)
     const [selectedWorldId, setSelectedWorldId] = useState<number | null>(null)
+    const [startInEditMode, setStartInEditMode] = useState(false)
 
     const handleWorldAdded = () => {
         setRefreshTrigger(prev => prev + 1)
@@ -32,12 +33,14 @@ function App() {
         setSelectedWorldId(null) // Reset world detail when navigating
     }
 
-    const handleWorldClick = (worldId: number) => {
+    const handleWorldClick = (worldId: number, shouldEdit: boolean = false) => {
         setSelectedWorldId(worldId)
+        setStartInEditMode(shouldEdit)
     }
 
     const handleBackToList = () => {
         setSelectedWorldId(null)
+        setStartInEditMode(false)
         setRefreshTrigger(prev => prev + 1) // Refresh list to show updated group assignments
     }
 
@@ -76,7 +79,7 @@ function App() {
             refreshTrigger={refreshTrigger}
         >
             {selectedWorldId ? (
-                <WorldDetail worldId={selectedWorldId} onBack={handleBackToList} />
+                <WorldDetail worldId={selectedWorldId} onBack={handleBackToList} startInEditMode={startInEditMode} />
             ) : (
                 <WorldList
                     refreshTrigger={refreshTrigger}

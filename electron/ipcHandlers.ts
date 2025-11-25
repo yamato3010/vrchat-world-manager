@@ -53,6 +53,18 @@ export function registerIpcHandlers() {
         })
     })
 
+    ipcMain.handle('update-world', async (_, { id, data }: { id: number; data: any }) => {
+        return prisma.world.update({
+            where: { id },
+            data: {
+                name: data.name,
+                authorName: data.authorName,
+                description: data.description,
+                userMemo: data.userMemo,
+            },
+        })
+    })
+
     // Group CRUD
     ipcMain.handle('get-groups', async () => {
         return prisma.group.findMany({

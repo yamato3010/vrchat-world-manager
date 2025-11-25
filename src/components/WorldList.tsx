@@ -3,7 +3,7 @@ import { World } from '../types'
 
 interface WorldListProps {
     refreshTrigger: number
-    onWorldClick: (worldId: number) => void
+    onWorldClick: (worldId: number, shouldEdit?: boolean) => void
     groupId?: number
 }
 
@@ -49,15 +49,26 @@ export function WorldList({ refreshTrigger, onWorldClick, groupId }: WorldListPr
                             </div>
                         )}
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleDelete(world.id)
-                                }}
-                                className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-                            >
-                                削除
-                            </button>
+                            <div className="flex space-x-2 items-center">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        onWorldClick(world.id, true)
+                                    }}
+                                    className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                                >
+                                    編集
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleDelete(world.id)
+                                    }}
+                                    className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+                                >
+                                    削除
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div className="p-4" onClick={() => onWorldClick(world.id)}>

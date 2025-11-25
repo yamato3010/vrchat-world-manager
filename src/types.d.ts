@@ -44,6 +44,7 @@ export interface ElectronAPI {
     createWorld: (data: CreateWorldData) => Promise<World>
     deleteWorld: (id: number) => Promise<World>
     getWorldById: (id: number) => Promise<World | null>
+    updateWorld: (id: number, data: Partial<CreateWorldData>) => Promise<World>
     fetchVRChatWorld: (worldId: string) => Promise<any>
 
     // Group API
