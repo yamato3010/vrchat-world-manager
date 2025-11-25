@@ -4,9 +4,10 @@ interface AddWorldModalProps {
     isOpen: boolean
     onClose: () => void
     onWorldAdded: () => void
+    groupId?: number
 }
 
-export function AddWorldModal({ isOpen, onClose, onWorldAdded }: AddWorldModalProps) {
+export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWorldModalProps) {
     const [vrchatUrlOrId, setVrchatUrlOrId] = useState('')
     const [manualData, setManualData] = useState({
         name: '',
@@ -51,26 +52,42 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded }: AddWorldModalPr
         }
     }
 
+    const resetForm = () => {
+        setVrchatUrlOrId('')
+        setManualData({
+            name: '',
+            authorName: '',
+            description: '',
+            thumbnailUrl: '',
+            userMemo: '',
+            tags: '',
+        })
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
+        setError('')
+
         try {
-            await window.electronAPI.createWorld({
+            const createdWorld = await window.electronAPI.createWorld({
                 vrchatWorldId: vrchatUrlOrId.match(/(wrld_[a-f0-9-]+)/)?.[1] || undefined,
                 ...manualData,
             })
+
+            // If groupId is provided, automatically add world to that group
+            if (groupId && createdWorld) {
+                try {
+                    await window.electronAPI.addWorldToGroup(createdWorld.id, groupId)
+                } catch (err) {
+                    console.error('Failed to add world to group:', err)
+                    // Don't fail the entire operation if group assignment fails
+                }
+            }
+
             onWorldAdded()
             onClose()
-            // Reset form
-            setVrchatUrlOrId('')
-            setManualData({
-                name: '',
-                authorName: '',
-                description: '',
-                thumbnailUrl: '',
-                userMemo: '',
-                tags: '',
-            })
+            resetForm()
         } catch (err: any) {
             setError('Failed to save world: ' + err.message)
         } finally {

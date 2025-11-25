@@ -89,6 +89,7 @@ function App() {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onWorldAdded={handleWorldAdded}
+                groupId={activeView === 'group' ? activeGroupId : undefined}
             />
 
             <AddGroupModal
