@@ -34,7 +34,7 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWor
             }
 
             if (!worldId.startsWith('wrld_')) {
-                throw new Error('Invalid World ID format')
+                throw new Error('ワールドのURLまたはIDが無効です！')
             }
 
             const data = await window.electronAPI.fetchVRChatWorld(worldId)
@@ -46,7 +46,7 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWor
                 thumbnailUrl: data.thumbnailImageUrl,
             })
         } catch (err: any) {
-            setError('Failed to fetch world: ' + err.message)
+            setError('ワールドの取得に失敗しました: ' + err.message)
         } finally {
             setLoading(false)
         }
@@ -98,10 +98,10 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWor
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-gray-800 p-6 rounded-lg w-full max-w-2xl text-white">
-                <h2 className="text-xl font-bold mb-4">Add World</h2>
+                <h2 className="text-xl font-bold mb-4">ワールドを追加</h2>
 
                 <div className="mb-6">
-                    <label className="block text-sm font-medium mb-1">VRChat URL or ID (Optional)</label>
+                    <label className="block text-sm font-medium mb-1">ワールドのURL または ID（任意）</label>
                     <div className="flex gap-2">
                         <input
                             type="text"
@@ -115,7 +115,7 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWor
                             disabled={loading || !vrchatUrlOrId}
                             className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded disabled:opacity-50"
                         >
-                            Fetch
+                            ワールド情報取得
                         </button>
                     </div>
                 </div>
@@ -123,7 +123,7 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWor
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium mb-1">World Name *</label>
+                            <label className="block text-sm font-medium mb-1">ワールド名 *</label>
                             <input
                                 required
                                 type="text"
@@ -133,7 +133,7 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWor
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Author</label>
+                            <label className="block text-sm font-medium mb-1">作者</label>
                             <input
                                 type="text"
                                 className="w-full bg-gray-700 rounded px-3 py-2"
@@ -144,7 +144,7 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWor
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Description</label>
+                        <label className="block text-sm font-medium mb-1">説明</label>
                         <textarea
                             className="w-full bg-gray-700 rounded px-3 py-2 h-20"
                             value={manualData.description}
@@ -153,7 +153,7 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWor
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Thumbnail URL</label>
+                        <label className="block text-sm font-medium mb-1">サムネイル URL</label>
                         <input
                             type="text"
                             className="w-full bg-gray-700 rounded px-3 py-2"
@@ -167,7 +167,7 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWor
                     )}
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">My Memo</label>
+                        <label className="block text-sm font-medium mb-1">メモ</label>
                         <textarea
                             className="w-full bg-gray-700 rounded px-3 py-2"
                             value={manualData.userMemo}
@@ -183,14 +183,14 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWor
                             onClick={onClose}
                             className="px-4 py-2 hover:bg-gray-700 rounded"
                         >
-                            Cancel
+                            キャンセル
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
                             className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded disabled:opacity-50"
                         >
-                            {loading ? 'Saving...' : 'Save World'}
+                            {loading ? '保存中...' : 'ワールドを保存'}
                         </button>
                     </div>
                 </form>

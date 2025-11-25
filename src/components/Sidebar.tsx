@@ -29,7 +29,7 @@ export function Sidebar({ activeView, activeGroupId, onNavigate, onAddGroup, onD
     return (
         <aside className="w-64 bg-gray-800 flex flex-col h-full border-r border-gray-700">
             <div className="p-4 border-b border-gray-700">
-                <h2 className="text-lg font-bold text-white">Library</h2>
+                <h2 className="text-lg font-bold text-white">ライブラリ</h2>
             </div>
 
             <nav className="flex-1 overflow-y-auto py-4">
@@ -40,12 +40,12 @@ export function Sidebar({ activeView, activeGroupId, onNavigate, onAddGroup, onD
                             className={`w-full text-left px-4 py-2 hover:bg-gray-700 transition-colors ${activeView === 'all' ? 'bg-gray-700 text-purple-400 font-medium' : 'text-gray-300'
                                 }`}
                         >
-                            All Worlds
+                            すべてのワールド
                         </button>
                     </li>
 
                     <li className="pt-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider flex justify-between items-center">
-                        <span>Groups</span>
+                        <span>グループ</span>
                     </li>
 
                     {groups.map((group) => (
@@ -71,7 +71,7 @@ export function Sidebar({ activeView, activeGroupId, onNavigate, onAddGroup, onD
                                             onDeleteGroup(group)
                                         }}
                                         className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-red-600 rounded transition-all text-gray-400 hover:text-white cursor-pointer"
-                                        title="Delete group"
+                                        title="グループを削除"
                                     >
                                         🗑️
                                     </div>
@@ -85,7 +85,7 @@ export function Sidebar({ activeView, activeGroupId, onNavigate, onAddGroup, onD
                             onClick={onAddGroup}
                             className="text-sm text-gray-400 hover:text-white flex items-center gap-2 transition-colors"
                         >
-                            <span className="text-lg">+</span> Create Group
+                            <span className="text-lg">+</span> グループを作成
                         </button>
                     </li>
                 </ul>

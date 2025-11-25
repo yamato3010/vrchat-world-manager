@@ -40,28 +40,28 @@ export function AddGroupModal({ isOpen, onClose, onGroupAdded }: AddGroupModalPr
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md text-white border border-gray-700 shadow-xl">
-                <h2 className="text-xl font-bold mb-4">Create New Group</h2>
+                <h2 className="text-xl font-bold mb-4">新しいグループを作成</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium mb-1">Group Name *</label>
+                        <label className="block text-sm font-medium mb-1">グループ名 *</label>
                         <input
                             required
                             type="text"
                             className="w-full bg-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="e.g. Favorites, Horror, Chill"
+                            placeholder="例：お気に入り、ホラー、チル、今度行く"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Description</label>
+                        <label className="block text-sm font-medium mb-1">説明</label>
                         <textarea
                             className="w-full bg-gray-700 rounded px-3 py-2 h-24 focus:outline-none focus:ring-2 focus:ring-purple-500"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Optional description..."
+                            placeholder="任意の説明..."
                         />
                     </div>
 
@@ -73,14 +73,14 @@ export function AddGroupModal({ isOpen, onClose, onGroupAdded }: AddGroupModalPr
                             onClick={onClose}
                             className="px-4 py-2 hover:bg-gray-700 rounded transition-colors"
                         >
-                            Cancel
+                            キャンセル
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
                             className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded disabled:opacity-50 transition-colors"
                         >
-                            {loading ? 'Creating...' : 'Create Group'}
+                            {loading ? '作成中...' : 'グループを作成'}
                         </button>
                     </div>
                 </form>

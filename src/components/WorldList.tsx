@@ -28,13 +28,13 @@ export function WorldList({ refreshTrigger, onWorldClick, groupId }: WorldListPr
     }
 
     const handleDelete = async (id: number) => {
-        if (confirm('Are you sure you want to delete this world?')) {
+        if (confirm('本当にこのワールドを削除しますか？')) {
             await window.electronAPI.deleteWorld(id)
             loadWorlds()
         }
     }
 
-    if (loading) return <div className="text-center p-4">Loading worlds...</div>
+    if (loading) return <div className="text-center p-4">読み込み中...</div>
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
@@ -45,7 +45,7 @@ export function WorldList({ refreshTrigger, onWorldClick, groupId }: WorldListPr
                             <img src={world.thumbnailUrl} alt={world.name} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-500">
-                                No Image
+                                画像なし
                             </div>
                         )}
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -56,7 +56,7 @@ export function WorldList({ refreshTrigger, onWorldClick, groupId }: WorldListPr
                                 }}
                                 className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
                             >
-                                Delete
+                                削除
                             </button>
                         </div>
                     </div>
@@ -65,7 +65,7 @@ export function WorldList({ refreshTrigger, onWorldClick, groupId }: WorldListPr
                         <p className="text-sm text-gray-400 truncate">{world.authorName}</p>
                         {world.userMemo && (
                             <div className="mt-2 text-sm bg-gray-700 p-2 rounded">
-                                <span className="text-yellow-500 text-xs font-bold">MEMO:</span> {world.userMemo}
+                                <span className="text-yellow-500 text-xs font-bold">メモ:</span> {world.userMemo}
                             </div>
                         )}
                     </div>
@@ -73,7 +73,7 @@ export function WorldList({ refreshTrigger, onWorldClick, groupId }: WorldListPr
             ))}
             {worlds.length === 0 && (
                 <div className="col-span-full text-center text-gray-500 py-10">
-                    No worlds added yet. Click "Add World" to get started.
+                    まだワールドが追加されていません。「ワールドを追加」をクリックして始めましょう。
                 </div>
             )}
         </div>

@@ -30,19 +30,16 @@ export function DeleteGroupModal({ isOpen, group, onClose, onDelete }: DeleteGro
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md text-white border border-gray-700 shadow-xl">
-                <h2 className="text-xl font-bold mb-4 text-red-400">Delete Group</h2>
+                <h2 className="text-xl font-bold mb-4 text-red-400">グループを削除</h2>
 
                 <p className="mb-4 text-gray-300">
-                    Are you sure you want to delete the group <strong className="text-white">"{group.name}"</strong>?
+                    グループ <strong className="text-white">「{group.name}」</strong> を削除してもよろしいですか？
                 </p>
 
                 {worldCount > 0 && (
                     <div className="mb-6 p-4 bg-yellow-900 bg-opacity-30 border border-yellow-600 rounded">
-                        <p className="text-yellow-200 text-sm mb-2">
-                            ⚠️ This group contains <strong>{worldCount}</strong> world{worldCount > 1 ? 's' : ''}.
-                        </p>
-                        <p className="text-yellow-300 text-sm">
-                            What would you like to do with them?
+                        <p className="text-yellow-200 text-sm">
+                            ⚠️ このグループには <strong>{worldCount}</strong> 個のワールドが含まれています。
                         </p>
                     </div>
                 )}
@@ -53,11 +50,11 @@ export function DeleteGroupModal({ isOpen, group, onClose, onDelete }: DeleteGro
                         disabled={loading}
                         className="w-full bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded disabled:opacity-50 transition-colors text-left"
                     >
-                        <div className="font-medium">Delete group only</div>
+                        <div className="font-medium">グループのみ削除</div>
                         <div className="text-sm text-gray-300 mt-1">
                             {worldCount > 0
-                                ? `Keep ${worldCount} world${worldCount > 1 ? 's' : ''} in "All Worlds"`
-                                : 'The group is empty'}
+                                ? `${worldCount} 個のワールドを「すべてのワールド」に残します`
+                                : 'グループは空です'}
                         </div>
                     </button>
 
@@ -67,9 +64,9 @@ export function DeleteGroupModal({ isOpen, group, onClose, onDelete }: DeleteGro
                             disabled={loading}
                             className="w-full bg-red-600 hover:bg-red-700 px-4 py-3 rounded disabled:opacity-50 transition-colors text-left"
                         >
-                            <div className="font-medium">Delete group and all worlds</div>
+                            <div className="font-medium">グループと全てのワールドを削除</div>
                             <div className="text-sm text-gray-300 mt-1">
-                                Permanently delete {worldCount} world{worldCount > 1 ? 's' : ''} from the database
+                                グループに含まれている{worldCount} 個のワールドも一緒に削除します
                             </div>
                         </button>
                     )}
@@ -81,7 +78,7 @@ export function DeleteGroupModal({ isOpen, group, onClose, onDelete }: DeleteGro
                         disabled={loading}
                         className="px-4 py-2 hover:bg-gray-700 rounded transition-colors disabled:opacity-50"
                     >
-                        Cancel
+                        キャンセル
                     </button>
                 </div>
             </div>
