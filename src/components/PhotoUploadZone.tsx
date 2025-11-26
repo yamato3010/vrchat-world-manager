@@ -2,9 +2,10 @@ import { useState } from 'react'
 
 interface PhotoUploadZoneProps {
     onPhotoUploaded: () => void
+    worldId?: number
 }
 
-export function PhotoUploadZone({ onPhotoUploaded }: PhotoUploadZoneProps) {
+export function PhotoUploadZone({ onPhotoUploaded, worldId }: PhotoUploadZoneProps) {
     const [isDragging, setIsDragging] = useState(false)
     const [uploading, setUploading] = useState(false)
     const [lastResult, setLastResult] = useState<any>(null)
@@ -38,7 +39,7 @@ export function PhotoUploadZone({ onPhotoUploaded }: PhotoUploadZoneProps) {
         try {
             // ElectronのwebUtilsを使用してファイルパスを取得する
             const filePath = window.electronAPI.getPathForFile(file)
-            const result = await window.electronAPI.importPhoto(filePath)
+            const result = await window.electronAPI.importPhoto(filePath, worldId)
             setLastResult(result)
 
             if (result.success) {

@@ -266,7 +266,7 @@ export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldD
                     <div className="mb-6 border-t border-gray-700 pt-6">
                         <h2 className="text-xl font-semibold mb-4">写真</h2>
 
-                        <PhotoUploadZone onPhotoUploaded={handlePhotoUploaded} />
+                        <PhotoUploadZone onPhotoUploaded={handlePhotoUploaded} worldId={world.id} />
 
                         {photos.length > 0 && (
                             <div className="mt-6">

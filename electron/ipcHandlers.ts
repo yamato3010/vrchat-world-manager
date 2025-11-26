@@ -163,7 +163,7 @@ export function registerIpcHandlers() {
     })
 
     // Photo management
-    ipcMain.handle('import-photo', async (_, filePath: string) => {
+    ipcMain.handle('import-photo', async (_, filePath: string, targetWorldId?: number) => {
         try {
             // 1. PNGからメタデータを取得
             console.log('Parsing PNG metadata開始')
@@ -172,7 +172,10 @@ export function registerIpcHandlers() {
 
             let worldId: number
 
-            if (extractedWorldId) {
+            // targetWorldIdが指定されている場合は、それを優先して使用する（メタデータチェックをスキップ）
+            if (targetWorldId) {
+                worldId = targetWorldId
+            } else if (extractedWorldId) {
                 // 2. ワールドIDがDBに既に存在するか確認
                 let world = await prisma.world.findUnique({
                     where: { vrchatWorldId: extractedWorldId },
@@ -199,20 +202,12 @@ export function registerIpcHandlers() {
                             },
                         })
                     } catch (apiError) {
-                        console.error('Failed to fetch world from API:', apiError)
-                        // 最小限の情報でワールド作成
-                        world = await prisma.world.create({
-                            data: {
-                                vrchatWorldId: extractedWorldId,
-                                name: `World ${extractedWorldId}`,
-                            },
-                        })
+                        console.error('Failed to fetch world info from VRChat API:', apiError)
+                        throw new Error(`World ID ${extractedWorldId} found in metadata but failed to fetch details from VRChat API`)
                     }
                 }
-
                 worldId = world.id
             } else {
-                // World IDが見つからない場合はエラーを投げる
                 throw new Error('World ID not found in PNG metadata')
             }
 

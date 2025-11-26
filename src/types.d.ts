@@ -67,7 +67,7 @@ export interface ElectronAPI {
     removeWorldFromGroup: (worldId: number, groupId: number) => Promise<void>
 
     // Photo API
-    importPhoto: (filePath: string) => Promise<{
+    importPhoto: (filePath: string, worldId?: number) => Promise<{
         success: boolean
         photo?: Photo
         metadata?: any
