@@ -1,6 +1,8 @@
 import { ipcMain } from 'electron'
 import { PrismaClient } from '@prisma/client'
 import axios from 'axios'
+import { parsePNGMetadata } from './utils/pngMetadata'
+import * as path from 'path'
 
 const prisma = new PrismaClient()
 
@@ -95,7 +97,7 @@ export function registerIpcHandlers() {
 
     ipcMain.handle('delete-group', async (_, { id, deleteWorlds }: { id: number; deleteWorlds: boolean }) => {
         if (deleteWorlds) {
-            // First, get all worlds in this group
+            // このグループに属する全てのワールドを取得
             const worldsInGroup = await prisma.worldOnGroup.findMany({
                 where: { groupId: id },
                 select: { worldId: true },
@@ -103,10 +105,10 @@ export function registerIpcHandlers() {
 
             const worldIds = worldsInGroup.map(wog => wog.worldId)
 
-            // Delete the group (this will cascade delete WorldOnGroup entries)
+            // グループを削除する
             await prisma.group.delete({ where: { id } })
 
-            // Delete all worlds that were in this group
+            // グループに属する全てのワールドを削除する
             if (worldIds.length > 0) {
                 await prisma.world.deleteMany({
                     where: {
@@ -117,7 +119,7 @@ export function registerIpcHandlers() {
                 })
             }
         } else {
-            // Just delete the group (WorldOnGroup entries will be cascade deleted by Prisma)
+            // グループの削除
             await prisma.group.delete({ where: { id } })
         }
 
@@ -158,5 +160,97 @@ export function registerIpcHandlers() {
             console.error('Error fetching VRChat world:', error)
             throw error
         }
+    })
+
+    // Photo management
+    ipcMain.handle('import-photo', async (_, filePath: string) => {
+        try {
+            // 1. PNGからメタデータを取得
+            console.log('Parsing PNG metadata開始')
+            const { metadata, worldId: extractedWorldId } = parsePNGMetadata(filePath)
+            const originalFileName = path.basename(filePath)
+
+            let worldId: number
+
+            if (extractedWorldId) {
+                // 2. ワールドIDがDBに既に存在するか確認
+                let world = await prisma.world.findUnique({
+                    where: { vrchatWorldId: extractedWorldId },
+                })
+
+                if (!world) {
+                    // 3. DBにない場合VRChat APIからワールド情報を取得して新規作成
+                    try {
+                        const response = await axios.get(`https://api.vrchat.cloud/api/1/worlds/${extractedWorldId}`, {
+                            headers: {
+                                'User-Agent': 'VRChatWorldManager/1.0 (yamato3010)',
+                            },
+                        })
+                        const worldData = response.data
+
+                        world = await prisma.world.create({
+                            data: {
+                                vrchatWorldId: extractedWorldId,
+                                name: worldData.name || 'Unknown World',
+                                authorName: worldData.authorName,
+                                description: worldData.description,
+                                thumbnailUrl: worldData.thumbnailImageUrl || worldData.imageUrl,
+                                tags: worldData.tags?.join(', '),
+                            },
+                        })
+                    } catch (apiError) {
+                        console.error('Failed to fetch world from API:', apiError)
+                        // 最小限の情報でワールド作成
+                        world = await prisma.world.create({
+                            data: {
+                                vrchatWorldId: extractedWorldId,
+                                name: `World ${extractedWorldId}`,
+                            },
+                        })
+                    }
+                }
+
+                worldId = world.id
+            } else {
+                // World IDが見つからない場合はエラーを投げる
+                throw new Error('World ID not found in PNG metadata')
+            }
+
+            // 4. 写真をDBに保存
+            const photo = await prisma.photo.create({
+                data: {
+                    filePath,
+                    originalFileName,
+                    metadata: JSON.stringify(metadata),
+                    worldId,
+                },
+            })
+
+            return {
+                success: true,
+                photo,
+                metadata,
+                extractedWorldId,
+            }
+        } catch (error: any) {
+            console.error('Failed to import photo:', error)
+            return {
+                success: false,
+                error: error.message,
+                metadata: null,
+                extractedWorldId: null,
+            }
+        }
+    })
+
+    ipcMain.handle('get-photos-by-world', async (_, worldId: number) => {
+        return prisma.photo.findMany({
+            where: { worldId },
+            orderBy: { createdAt: 'desc' },
+        })
+    })
+
+    ipcMain.handle('delete-photo', async (_, id: number) => {
+        return prisma.photo.delete({ where: { id } })
     })
 }

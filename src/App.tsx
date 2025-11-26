@@ -3,6 +3,7 @@ import { WorldList } from './components/WorldList'
 import { AddWorldModal } from './components/AddWorldModal'
 import { AddGroupModal } from './components/AddGroupModal'
 import { DeleteGroupModal } from './components/DeleteGroupModal'
+import { AddPhotoModal } from './components/AddPhotoModal'
 import { WorldDetail } from './pages/WorldDetail'
 import { Layout } from './components/Layout'
 import { Group } from './types'
@@ -11,6 +12,7 @@ import './index.css'
 function App() {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false)
+    const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false)
     const [isDeleteGroupModalOpen, setIsDeleteGroupModalOpen] = useState(false)
     const [groupToDelete, setGroupToDelete] = useState<Group | null>(null)
     const [refreshTrigger, setRefreshTrigger] = useState(0)
@@ -23,6 +25,10 @@ function App() {
         setRefreshTrigger(prev => prev + 1)
     }
 
+    const handlePhotoAdded = () => {
+        setRefreshTrigger(prev => prev + 1)
+    }
+
     const handleGroupAdded = () => {
         setRefreshTrigger(prev => prev + 1)
     }
@@ -30,7 +36,7 @@ function App() {
     const handleNavigate = (view: 'all' | 'group', groupId?: number) => {
         setActiveView(view)
         setActiveGroupId(groupId)
-        setSelectedWorldId(null) // Reset world detail when navigating
+        setSelectedWorldId(null) // 遷移したらワールドの選択状態をリセット
     }
 
     const handleWorldClick = (worldId: number, shouldEdit: boolean = false) => {
@@ -41,7 +47,7 @@ function App() {
     const handleBackToList = () => {
         setSelectedWorldId(null)
         setStartInEditMode(false)
-        setRefreshTrigger(prev => prev + 1) // Refresh list to show updated group assignments
+        setRefreshTrigger(prev => prev + 1)
     }
 
     const handleDeleteGroup = (group: Group) => {
@@ -55,7 +61,7 @@ function App() {
         try {
             await window.electronAPI.deleteGroup(groupToDelete.id, deleteWorlds)
 
-            // If we were viewing the deleted group, navigate to "All Worlds"
+            // 遷移していたグループが削除された場合は、全てのワールド一覧に移動する
             if (activeView === 'group' && activeGroupId === groupToDelete.id) {
                 handleNavigate('all')
             }
@@ -76,6 +82,7 @@ function App() {
             onAddGroup={() => setIsGroupModalOpen(true)}
             onDeleteGroup={handleDeleteGroup}
             onAddWorld={() => setIsModalOpen(true)}
+            onAddPhoto={() => setIsPhotoModalOpen(true)}
             refreshTrigger={refreshTrigger}
         >
             {selectedWorldId ? (
@@ -108,7 +115,13 @@ function App() {
                     setIsDeleteGroupModalOpen(false)
                     setGroupToDelete(null)
                 }}
-                onDelete={handleConfirmDeleteGroup}
+                onConfirm={handleConfirmDeleteGroup}
+            />
+
+            <AddPhotoModal
+                isOpen={isPhotoModalOpen}
+                onClose={() => setIsPhotoModalOpen(false)}
+                onPhotoAdded={handlePhotoAdded}
             />
         </Layout>
     )

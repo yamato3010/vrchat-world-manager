@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import { webUtils } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
     getWorlds: (groupId?: number) => ipcRenderer.invoke('get-worlds', groupId),
@@ -14,7 +15,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateGroup: (id: number, data: any) => ipcRenderer.invoke('update-group', { id, data }),
     deleteGroup: (id: number, deleteWorlds: boolean) => ipcRenderer.invoke('delete-group', { id, deleteWorlds }),
     addWorldToGroup: (worldId: number, groupId: number) => ipcRenderer.invoke('add-world-to-group', { worldId, groupId }),
-    removeWorldFromGroup: (worldId: number, groupId: number) => ipcRenderer.invoke('remove-world-from-group', { worldId, groupId }),
+    removeWorldFromGroup: (worldId: number, groupId: number) => ipcRenderer.invoke('remove-world-from-group', worldId, groupId),
+
+    // Photo API
+    importPhoto: (filePath: string) => ipcRenderer.invoke('import-photo', filePath),
+    getPhotosByWorld: (worldId: number) => ipcRenderer.invoke('get-photos-by-world', worldId),
+    deletePhoto: (id: number) => ipcRenderer.invoke('delete-photo', id),
+
+    // File utilities
+    getPathForFile: (file: File) => webUtils.getPathForFile(file),
 })
 
 console.log('Preload script loaded');

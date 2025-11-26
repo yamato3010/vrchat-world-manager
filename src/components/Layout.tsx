@@ -9,7 +9,8 @@ interface LayoutProps {
     onAddGroup: () => void
     onDeleteGroup: (group: any) => void
     onAddWorld: () => void
-    refreshTrigger?: number
+    onAddPhoto: () => void
+    refreshTrigger: number
 }
 
 export function Layout({
@@ -20,6 +21,7 @@ export function Layout({
     onAddGroup,
     onDeleteGroup,
     onAddWorld,
+    onAddPhoto,
     refreshTrigger
 }: LayoutProps) {
     return (
@@ -38,12 +40,20 @@ export function Layout({
                     <h1 className="text-xl font-bold text-white">
                         {activeView === 'all' ? 'All Worlds' : 'Group View'}
                     </h1>
-                    <button
-                        onClick={onAddWorld}
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded shadow transition-colors flex items-center gap-2"
-                    >
-                        <span>+</span> ワールドを追加
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={onAddPhoto}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition-colors flex items-center gap-2"
+                        >
+                            <span>+</span> 写真を追加
+                        </button>
+                        <button
+                            onClick={onAddWorld}
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded shadow transition-colors flex items-center gap-2"
+                        >
+                            <span>+</span> ワールドを追加
+                        </button>
+                    </div>
                 </header>
 
                 <main className="flex-1 overflow-y-auto p-6">

@@ -33,6 +33,17 @@ export interface Group {
     }
 }
 
+export interface Photo {
+    id: number
+    filePath: string
+    originalFileName: string
+    takenAt?: Date
+    metadata?: string
+    worldId: number
+    createdAt: Date
+    updatedAt: Date
+}
+
 export interface CreateGroupData {
     name: string
     description?: string
@@ -52,8 +63,22 @@ export interface ElectronAPI {
     createGroup: (data: CreateGroupData) => Promise<Group>
     updateGroup: (id: number, data: Partial<CreateGroupData>) => Promise<Group>
     deleteGroup: (id: number, deleteWorlds: boolean) => Promise<{ success: boolean }>
-    addWorldToGroup: (worldId: number, groupId: number) => Promise<any>
-    removeWorldFromGroup: (worldId: number, groupId: number) => Promise<any>
+    addWorldToGroup: (worldId: number, groupId: number) => Promise<void>
+    removeWorldFromGroup: (worldId: number, groupId: number) => Promise<void>
+
+    // Photo API
+    importPhoto: (filePath: string) => Promise<{
+        success: boolean
+        photo?: Photo
+        metadata?: any
+        extractedWorldId?: string | null
+        error?: string
+    }>
+    getPhotosByWorld: (worldId: number) => Promise<Photo[]>
+    deletePhoto: (id: number) => Promise<Photo>
+
+    // File utilities
+    getPathForFile: (file: File) => string
 }
 
 declare global {

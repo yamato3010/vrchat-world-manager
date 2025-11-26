@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { World, Group } from '../types'
+import { World, Group, Photo } from '../types'
+import { PhotoUploadZone } from '../components/PhotoUploadZone'
 
 interface WorldDetailProps {
     worldId: number
@@ -13,6 +14,7 @@ export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldD
     const [assignedGroupIds, setAssignedGroupIds] = useState<Set<number>>(new Set())
     const [loading, setLoading] = useState(true)
     const [isEditing, setIsEditing] = useState(startInEditMode)
+    const [photos, setPhotos] = useState<Photo[]>([])
     const [editData, setEditData] = useState({
         name: '',
         authorName: '',
@@ -23,6 +25,7 @@ export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldD
     useEffect(() => {
         loadWorldDetail()
         loadGroups()
+        loadPhotos()
     }, [worldId])
 
     const loadWorldDetail = async () => {
@@ -36,7 +39,7 @@ export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldD
                     description: data.description || '',
                     userMemo: data.userMemo || '',
                 })
-                // Extract assigned group IDs from the world data
+                // ワールドデータから割り当てられたグループIDを抽出する
                 const groupIds = new Set<number>(
                     (data as any).groups?.map((wog: any) => wog.groupId as number) || []
                 )
@@ -56,6 +59,19 @@ export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldD
         } catch (error) {
             console.error('Failed to load groups:', error)
         }
+    }
+
+    const loadPhotos = async () => {
+        try {
+            const data = await window.electronAPI.getPhotosByWorld(worldId)
+            setPhotos(data)
+        } catch (error) {
+            console.error('Failed to load photos:', error)
+        }
+    }
+
+    const handlePhotoUploaded = () => {
+        loadPhotos()
     }
 
     const handleGroupToggle = async (groupId: number, isChecked: boolean) => {
@@ -242,6 +258,44 @@ export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldD
                                         </div>
                                     </label>
                                 ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 写真アップロードとギャラリー */}
+                    <div className="mb-6 border-t border-gray-700 pt-6">
+                        <h2 className="text-xl font-semibold mb-4">写真</h2>
+
+                        <PhotoUploadZone onPhotoUploaded={handlePhotoUploaded} />
+
+                        {photos.length > 0 && (
+                            <div className="mt-6">
+                                <h3 className="text-lg font-semibold mb-3">ギャラリー ({photos.length})</h3>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {photos.map((photo) => (
+                                        <div key={photo.id} className="relative group">
+                                            <img
+                                                src={`file://${photo.filePath}`}
+                                                alt={photo.originalFileName}
+                                                className="w-full h-32 object-cover rounded"
+                                            />
+                                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                <button
+                                                    onClick={async () => {
+                                                        if (confirm('この写真を削除しますか？')) {
+                                                            await window.electronAPI.deletePhoto(photo.id)
+                                                            loadPhotos()
+                                                        }
+                                                    }}
+                                                    className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+                                                >
+                                                    削除
+                                                </button>
+                                            </div>
+                                            <p className="text-xs text-gray-400 mt-1 truncate">{photo.originalFileName}</p>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
