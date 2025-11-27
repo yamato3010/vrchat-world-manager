@@ -79,6 +79,17 @@ export function registerIpcHandlers() {
         })
     })
 
+    ipcMain.handle('get-group-by-id', async (_, id: number) => {
+        return prisma.group.findUnique({
+            where: { id },
+            include: {
+                _count: {
+                    select: { worlds: true },
+                },
+            },
+        })
+    })
+
     ipcMain.handle('create-group', async (_, data: { name: string; description?: string; icon?: string }) => {
         return prisma.group.create({
             data: {

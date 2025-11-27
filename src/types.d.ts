@@ -60,6 +60,7 @@ export interface ElectronAPI {
 
     // Group API
     getGroups: () => Promise<Group[]>
+    getGroupById: (id: number) => Promise<Group | null>
     createGroup: (data: CreateGroupData) => Promise<Group>
     updateGroup: (id: number, data: Partial<CreateGroupData>) => Promise<Group>
     deleteGroup: (id: number, deleteWorlds: boolean) => Promise<{ success: boolean }>
