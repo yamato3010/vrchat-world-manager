@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import axios from 'axios'
 import { parsePNGMetadata } from './utils/pngMetadata'
 import * as path from 'path'
+import * as fs from 'fs'
 
 const prisma = new PrismaClient()
 
@@ -253,5 +254,15 @@ export function registerIpcHandlers() {
 
     ipcMain.handle('delete-photo', async (_, id: number) => {
         return prisma.photo.delete({ where: { id } })
+    })
+
+    ipcMain.handle('read-image-base64', async (_, filePath: string) => {
+        try {
+            const image = await fs.promises.readFile(filePath)
+            return image.toString('base64')
+        } catch (error) {
+            console.error('Failed to read image:', error)
+            throw error
+        }
     })
 }

@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     // File utilities
     getPathForFile: (file: File) => webUtils.getPathForFile(file),
+    readImageBase64: (filePath: string) => ipcRenderer.invoke('read-image-base64', filePath),
 })
 
 console.log('Preload script loaded');

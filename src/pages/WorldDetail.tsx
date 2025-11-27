@@ -8,6 +8,48 @@ interface WorldDetailProps {
     startInEditMode?: boolean
 }
 
+function PhotoItem({ photo, onDelete }: { photo: Photo; onDelete: () => void }) {
+    const [imageData, setImageData] = useState<string | null>(null)
+
+    useEffect(() => {
+        const loadImage = async () => {
+            // ローカルの画像を表示するためにbase64に変換する
+            try {
+                const base64 = await window.electronAPI.readImageBase64(photo.filePath)
+                setImageData(`data:image/png;base64,${base64}`)
+            } catch (error) {
+                console.error('Failed to load image:', error)
+            }
+        }
+        loadImage()
+    }, [photo.filePath])
+
+    return (
+        <div className="relative group">
+            {imageData ? (
+                <img
+                    src={imageData}
+                    alt={photo.originalFileName}
+                    className="w-full h-32 object-cover rounded"
+                />
+            ) : (
+                <div className="w-full h-32 bg-gray-700 rounded flex items-center justify-center">
+                    <span className="text-gray-500 text-xs">Loading...</span>
+                </div>
+            )}
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <button
+                    onClick={onDelete}
+                    className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+                >
+                    削除
+                </button>
+            </div>
+            <p className="text-xs text-gray-400 mt-1 truncate">{photo.originalFileName}</p>
+        </div>
+    )
+}
+
 export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldDetailProps) {
     const [world, setWorld] = useState<World | null>(null)
     const [groups, setGroups] = useState<Group[]>([])
@@ -273,27 +315,16 @@ export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldD
                                 <h3 className="text-lg font-semibold mb-3">ギャラリー ({photos.length})</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                     {photos.map((photo) => (
-                                        <div key={photo.id} className="relative group">
-                                            <img
-                                                src={`file://${photo.filePath}`}
-                                                alt={photo.originalFileName}
-                                                className="w-full h-32 object-cover rounded"
-                                            />
-                                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                                <button
-                                                    onClick={async () => {
-                                                        if (confirm('この写真を削除しますか？')) {
-                                                            await window.electronAPI.deletePhoto(photo.id)
-                                                            loadPhotos()
-                                                        }
-                                                    }}
-                                                    className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-                                                >
-                                                    削除
-                                                </button>
-                                            </div>
-                                            <p className="text-xs text-gray-400 mt-1 truncate">{photo.originalFileName}</p>
-                                        </div>
+                                        <PhotoItem
+                                            key={photo.id}
+                                            photo={photo}
+                                            onDelete={async () => {
+                                                if (confirm('この写真を削除しますか？')) {
+                                                    await window.electronAPI.deletePhoto(photo.id)
+                                                    loadPhotos()
+                                                }
+                                            }}
+                                        />
                                     ))}
                                 </div>
                             </div>
