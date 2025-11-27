@@ -23,6 +23,7 @@ export function parsePNGMetadata(filePath: string): ParseResult {
     const s = png.readFileSync(filePath)
     // split
     const list = png.splitChunk(s)
+    console.log(list)
 
     /** listの中のオブジェクトは以下のようになっている
     * [{
@@ -37,12 +38,19 @@ export function parsePNGMetadata(filePath: string): ParseResult {
     list.forEach((chunk) => {
         if (chunk.type === 'iTXt' || chunk.type === 'tEXt' || chunk.type === 'zTXt') {
             const data = chunk.data.toString('binary') 
-            // シングルクォーテーションかダブルクォーテーションで囲まれた wrld_ から始まる文字列を抽出
-            // "wrld_..." または 'wrld_...'
-            const match = data.match(/(["'])(wrld_[a-f0-9-]{36})\1/)
+            // シングルクォーテーションかダブルクォーテーション、あるいはxmlタグで囲まれた wrld_ から始まる文字列を抽出
+            // "wrld_..." または 'wrld_...' または >wrld_...<
+            // json形式でワールドIDが格納されていた場合
+            const match_json = data.match(/(["'])(wrld_[a-f0-9-]{36})\1/)
+            // xml形式でワールドIDが格納されていた場合
+            const match_xml = data.match(/>(wrld_[a-f0-9-]{36})</)
 
-            if (match) {
-                worldId = match[2]
+            if (match_json) {
+                worldId = match_json[2]
+                console.log('World ID found:', worldId)
+            }
+            if (match_xml) {
+                worldId = match_xml[1]
                 console.log('World ID found:', worldId)
             }
         }
