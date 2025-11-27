@@ -81,6 +81,7 @@ export interface ElectronAPI {
     // File utilities
     getPathForFile: (file: File) => string
     readImageBase64: (filePath: string) => Promise<string>
+    openExternalLink: (url: string) => Promise<void>
 }
 
 declare global {

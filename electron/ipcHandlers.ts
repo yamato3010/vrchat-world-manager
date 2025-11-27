@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { ipcMain, shell } from 'electron'
 import { PrismaClient } from '@prisma/client'
 import axios from 'axios'
 import { parsePNGMetadata } from './utils/pngMetadata'
@@ -264,5 +264,9 @@ export function registerIpcHandlers() {
             console.error('Failed to read image:', error)
             throw error
         }
+    })
+
+    ipcMain.handle('open-external-link', async (_, url: string) => {
+        await shell.openExternal(url)
     })
 }

@@ -196,17 +196,29 @@ export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldD
                                 className="text-3xl font-bold bg-gray-700 rounded px-3 py-2 flex-1 mr-4"
                             />
                         ) : (
-                            <h1 className="text-3xl font-bold">{world.name}</h1>
+                            <>
+                                <h1 className="text-3xl font-bold">{world.name}</h1>
+                                <div className="flex space-x-2">
+                                    {world.vrchatWorldId && (
+                                        <button
+                                            onClick={() => window.electronAPI.openExternalLink(`https://vrchat.com/home/world/${world.vrchatWorldId}/info`)}
+                                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center"
+                                            title="VRChat公式サイトで開く"
+                                        >
+                                            <span className="mr-2">🌐</span> サイトで開く
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={handleEdit}
+                                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                                    >
+                                        編集
+                                    </button>
+                                </div>
+                            </>
                         )}
 
-                        {!isEditing ? (
-                            <button
-                                onClick={handleEdit}
-                                className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition-colors"
-                            >
-                                編集
-                            </button>
-                        ) : (
+                        {isEditing && (
                             <div className="flex gap-2">
                                 <button
                                     onClick={handleCancelEdit}

@@ -50,6 +50,18 @@ export function WorldList({ refreshTrigger, onWorldClick, groupId }: WorldListPr
                         )}
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                             <div className="flex space-x-2 items-center">
+                                {world.vrchatWorldId && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            window.electronAPI.openExternalLink(`https://vrchat.com/home/world/${world.vrchatWorldId}/info`)
+                                        }}
+                                        className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                                        title="公式サイト"
+                                    >
+                                        🌐
+                                    </button>
+                                )}
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation()
