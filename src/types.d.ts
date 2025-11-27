@@ -72,6 +72,7 @@ export interface ElectronAPI {
         photo?: Photo
         metadata?: any
         extractedWorldId?: string | null
+        world?: World | null
         error?: string
     }>
     getPhotosByWorld: (worldId: number) => Promise<Photo[]>

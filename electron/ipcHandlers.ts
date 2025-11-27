@@ -221,11 +221,17 @@ export function registerIpcHandlers() {
                 },
             })
 
+            // 紐付いたワールド情報を取得（名前などを返すため）
+            const world = await prisma.world.findUnique({
+                where: { id: worldId },
+            })
+
             return {
                 success: true,
                 photo,
                 metadata,
                 extractedWorldId,
+                world,
             }
         } catch (error: any) {
             console.error('Failed to import photo:', error)

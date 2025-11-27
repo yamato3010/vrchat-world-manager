@@ -76,7 +76,9 @@ export function PhotoUploadZone({ onPhotoUploaded, worldId }: PhotoUploadZonePro
                 <div className={`p-4 rounded-lg ${lastResult.success ? 'bg-green-900 bg-opacity-30 border border-green-600' : 'bg-red-900 bg-opacity-30 border border-red-600'}`}>
                     {lastResult.success ? (
                         <div>
-                            <p className="font-bold text-green-400 mb-2">✓ 写真をアップロードしました</p>
+                            <p className="font-bold text-green-400 mb-2">
+                                ✓ {lastResult.world ? `「${lastResult.world.name}」に` : ''}写真をアップロードしました
+                            </p>
                             {lastResult.extractedWorldId && (
                                 <p className="text-sm text-gray-300">
                                     World ID: <code className="bg-gray-700 px-2 py-1 rounded">{lastResult.extractedWorldId}</code>

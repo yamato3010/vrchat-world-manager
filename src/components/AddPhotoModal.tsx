@@ -11,7 +11,7 @@ export function AddPhotoModal({ isOpen, onClose, onPhotoAdded }: AddPhotoModalPr
 
     const handlePhotoUploaded = () => {
         onPhotoAdded()
-        onClose()
+        // 成功メッセージを見せるために自動では閉じない
     }
 
     return (
