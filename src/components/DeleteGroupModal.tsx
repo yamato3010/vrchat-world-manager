@@ -5,10 +5,10 @@ interface DeleteGroupModalProps {
     isOpen: boolean
     group: Group | null
     onClose: () => void
-    onDelete: (deleteWorlds: boolean) => void
+    onConfirm: (deleteWorlds: boolean) => void
 }
 
-export function DeleteGroupModal({ isOpen, group, onClose, onDelete }: DeleteGroupModalProps) {
+export function DeleteGroupModal({ isOpen, group, onClose, onConfirm }: DeleteGroupModalProps) {
     const [loading, setLoading] = useState(false)
 
     if (!isOpen || !group) return null
@@ -16,7 +16,7 @@ export function DeleteGroupModal({ isOpen, group, onClose, onDelete }: DeleteGro
     const handleDelete = async (deleteWorlds: boolean) => {
         setLoading(true)
         try {
-            await onDelete(deleteWorlds)
+            await onConfirm(deleteWorlds)
             onClose()
         } catch (error) {
             console.error('Failed to delete group:', error)
