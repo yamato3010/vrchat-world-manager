@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { WorldList } from './components/WorldList'
 import { AddWorldModal } from './components/AddWorldModal'
 import { AddGroupModal } from './components/AddGroupModal'
@@ -23,6 +23,15 @@ function App() {
 
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
     const [searchQuery, setSearchQuery] = useState('')
+
+    // グループ変更イベントをリッスン
+    useEffect(() => {
+        const handleGroupsChanged = () => {
+            setRefreshTrigger(prev => prev + 1)
+        }
+        window.addEventListener('groups-changed', handleGroupsChanged)
+        return () => window.removeEventListener('groups-changed', handleGroupsChanged)
+    }, [])
 
     const handleWorldAdded = () => {
         setRefreshTrigger(prev => prev + 1)
@@ -50,7 +59,7 @@ function App() {
     const handleBackToList = () => {
         setSelectedWorldId(null)
         setStartInEditMode(false)
-        setRefreshTrigger(prev => prev + 1)
+        setRefreshTrigger(prev => prev + 1) // グループのワールド数を更新
     }
 
     const handleDeleteGroup = (group: Group) => {

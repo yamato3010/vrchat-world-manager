@@ -148,6 +148,8 @@ export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldD
                     return newSet
                 })
             }
+            // サイドバーのグループリストを更新するためにonBackを一度呼んで戻す
+            window.dispatchEvent(new Event('groups-changed'))
         } catch (error) {
             console.error('Failed to update group assignment:', error)
         }
