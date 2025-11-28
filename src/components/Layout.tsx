@@ -11,6 +11,8 @@ interface LayoutProps {
     onAddWorld: () => void
     onAddPhoto: () => void
     refreshTrigger: number
+    viewMode: 'grid' | 'list'
+    onViewModeChange: (mode: 'grid' | 'list') => void
 }
 
 export function Layout({
@@ -22,7 +24,9 @@ export function Layout({
     onDeleteGroup,
     onAddWorld,
     onAddPhoto,
-    refreshTrigger
+    refreshTrigger,
+    viewMode,
+    onViewModeChange
 }: LayoutProps) {
     const [groupName, setGroupName] = useState<string>('')
 
@@ -59,6 +63,26 @@ export function Layout({
                         {activeView === 'all' ? 'All Worlds' : groupName || 'Group View'}
                     </h1>
                     <div className="flex items-center gap-3">
+                        <div className="bg-gray-700 rounded-lg p-1 flex mr-2">
+                            <button
+                                onClick={() => onViewModeChange('grid')}
+                                className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-gray-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
+                                title="グリッド表示"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                </svg>
+                            </button>
+                            <button
+                                onClick={() => onViewModeChange('list')}
+                                className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-gray-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
+                                title="リスト表示"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            </button>
+                        </div>
                         <button
                             onClick={onAddPhoto}
                             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition-colors flex items-center gap-2"

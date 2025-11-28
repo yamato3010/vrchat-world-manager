@@ -21,6 +21,8 @@ function App() {
     const [selectedWorldId, setSelectedWorldId] = useState<number | null>(null)
     const [startInEditMode, setStartInEditMode] = useState(false)
 
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+
     const handleWorldAdded = () => {
         setRefreshTrigger(prev => prev + 1)
     }
@@ -84,6 +86,8 @@ function App() {
             onAddWorld={() => setIsModalOpen(true)}
             onAddPhoto={() => setIsPhotoModalOpen(true)}
             refreshTrigger={refreshTrigger}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
         >
             {selectedWorldId ? (
                 <WorldDetail worldId={selectedWorldId} onBack={handleBackToList} startInEditMode={startInEditMode} />
@@ -92,6 +96,7 @@ function App() {
                     refreshTrigger={refreshTrigger}
                     onWorldClick={handleWorldClick}
                     groupId={activeView === 'group' ? activeGroupId : undefined}
+                    viewMode={viewMode}
                 />
             )}
 

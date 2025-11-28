@@ -5,9 +5,10 @@ interface WorldListProps {
     refreshTrigger: number
     onWorldClick: (worldId: number, shouldEdit?: boolean) => void
     groupId?: number
+    viewMode: 'grid' | 'list'
 }
 
-export function WorldList({ refreshTrigger, onWorldClick, groupId }: WorldListProps) {
+export function WorldList({ refreshTrigger, onWorldClick, groupId, viewMode }: WorldListProps) {
     const [worlds, setWorlds] = useState<World[]>([])
     const [loading, setLoading] = useState(true)
 
@@ -35,6 +36,88 @@ export function WorldList({ refreshTrigger, onWorldClick, groupId }: WorldListPr
     }
 
     if (loading) return <div className="text-center p-4">読み込み中...</div>
+
+    if (worlds.length === 0) {
+        return (
+            <div className="text-center text-gray-500 py-10">
+                まだワールドが追加されていません。「ワールドを追加」をクリックして始めましょう。
+            </div>
+        )
+    }
+
+    if (viewMode === 'list') {
+        return (
+            <div className="p-4">
+                <table className="w-full text-left border-collapse">
+                    <thead>
+                        <tr className="text-gray-400 border-b border-gray-700">
+                            <th className="p-3 w-24">画像</th>
+                            <th className="p-3">ワールド名</th>
+                            <th className="p-3">作者</th>
+                            <th className="p-3">メモ</th>
+                            <th className="p-3 w-40">アクション</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {worlds.map((world) => (
+                            <tr
+                                key={world.id}
+                                className="border-b border-gray-700 hover:bg-gray-800 transition-colors cursor-pointer"
+                                onClick={() => onWorldClick(world.id)}
+                            >
+                                <td className="p-3">
+                                    <div className="w-16 h-12 bg-gray-700 rounded overflow-hidden">
+                                        {world.thumbnailUrl ? (
+                                            <img src={world.thumbnailUrl} alt={world.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">No Img</div>
+                                        )}
+                                    </div>
+                                </td>
+                                <td className="p-3 font-medium">{world.name}</td>
+                                <td className="p-3 text-gray-400">{world.authorName}</td>
+                                <td className="p-3 text-sm text-gray-400 truncate max-w-xs">{world.userMemo}</td>
+                                <td className="p-3">
+                                    <div className="flex space-x-2">
+                                        {world.vrchatWorldId && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    window.electronAPI.openExternalLink(`https://vrchat.com/home/world/${world.vrchatWorldId}/info`)
+                                                }}
+                                                className="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700"
+                                                title="公式サイト"
+                                            >
+                                                🌐
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                onWorldClick(world.id, true)
+                                            }}
+                                            className="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700"
+                                        >
+                                            編集
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                handleDelete(world.id)
+                                            }}
+                                            className="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700"
+                                        >
+                                            削除
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        )
+    }
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
@@ -94,11 +177,6 @@ export function WorldList({ refreshTrigger, onWorldClick, groupId }: WorldListPr
                     </div>
                 </div>
             ))}
-            {worlds.length === 0 && (
-                <div className="col-span-full text-center text-gray-500 py-10">
-                    まだワールドが追加されていません。「ワールドを追加」をクリックして始めましょう。
-                </div>
-            )}
         </div>
     )
 }
