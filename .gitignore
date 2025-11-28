@@ -1,20 +1,76 @@
-node_modules
+# 依存関係
+node_modules/
+
+# ビルド成果物
+dist/
 dist-electron/
-dist/
-
 out/
-/src/generated/prisma
-
-.env
-
-*.db
-
-dist/
 build/
 coverage/
-.DS_Store
-.vscode/
+
+# Prisma生成コード
+/src/generated/prisma
+
+# 環境変数
+.env
+.env.local
+.env.*.local
+
+# データベース
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# ログ
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS固有
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# エディタ
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.classpath
+
+# TypeScript
+*.tsbuildinfo
 electron/**/*.js
 electron/**/*.d.ts
-*.tsbuildinfo
+electron/**/*.js.map
+
+# テスト
+coverage/
+.nyc_output/
+
+# Electronパッケージング
+*.exe
+*.dmg
+*.app
+*.AppImage
+*.deb
+*.rpm
+*.zip
+
+# 一時ファイル
+*.tmp
+*.temp
+.cache/
+
+vite.config.js
+vite.config.d.ts
