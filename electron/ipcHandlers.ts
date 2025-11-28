@@ -64,6 +64,7 @@ export function registerIpcHandlers() {
                 authorName: data.authorName,
                 description: data.description,
                 userMemo: data.userMemo,
+                tags: data.tags,
             },
         })
     })
@@ -159,6 +160,14 @@ export function registerIpcHandlers() {
         })
     })
 
+    // author_tag_から始まるタグだけを抽出する
+    const filterTags = (tags: string[]): string[] => {
+        if (!Array.isArray(tags)) return []
+        return tags
+            .filter(tag => tag.startsWith('author_tag_'))
+            .map(tag => tag.replace('author_tag_', ''))
+    }
+
     // VRChat API
     ipcMain.handle('fetch-vrchat-world', async (_, worldId: string) => {
         try {
@@ -167,7 +176,11 @@ export function registerIpcHandlers() {
                     'User-Agent': 'VRChatWorldManager/1.0 (yamato3010)',
                 },
             })
-            return response.data
+            const data = response.data
+            if (data.tags) {
+                data.tags = filterTags(data.tags)
+            }
+            return data
         } catch (error) {
             console.error('Error fetching VRChat world:', error)
             throw error
@@ -202,6 +215,7 @@ export function registerIpcHandlers() {
                             },
                         })
                         const worldData = response.data
+                        const filteredTags = filterTags(worldData.tags || [])
 
                         world = await prisma.world.create({
                             data: {
@@ -210,7 +224,7 @@ export function registerIpcHandlers() {
                                 authorName: worldData.authorName,
                                 description: worldData.description,
                                 thumbnailUrl: worldData.thumbnailImageUrl || worldData.imageUrl,
-                                tags: worldData.tags?.join(', '),
+                                tags: JSON.stringify(filteredTags),
                             },
                         })
                     } catch (apiError) {

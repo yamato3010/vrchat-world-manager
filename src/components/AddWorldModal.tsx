@@ -44,6 +44,7 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWor
                 authorName: data.authorName,
                 description: data.description,
                 thumbnailUrl: data.thumbnailImageUrl,
+                tags: data.tags ? data.tags.join(', ') : '',
             })
         } catch (err: any) {
             setError('ワールドの取得に失敗しました: ' + err.message)
@@ -70,9 +71,14 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWor
         setError('')
 
         try {
+            // カンマ区切りタグをJSON文字列配列に変換する
+            const tagsArray = manualData.tags.split(',').map(t => t.trim()).filter(t => t)
+            const tagsJson = JSON.stringify(tagsArray)
+
             const createdWorld = await window.electronAPI.createWorld({
                 vrchatWorldId: vrchatUrlOrId.match(/(wrld_[a-f0-9-]+)/)?.[1] || undefined,
                 ...manualData,
+                tags: tagsJson,
             })
 
             // If groupId is provided, automatically add world to that group
@@ -172,6 +178,17 @@ export function AddWorldModal({ isOpen, onClose, onWorldAdded, groupId }: AddWor
                             className="w-full bg-gray-700 rounded px-3 py-2"
                             value={manualData.userMemo}
                             onChange={(e) => setManualData({ ...manualData, userMemo: e.target.value })}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-1">タグ (カンマ区切り)</label>
+                        <input
+                            type="text"
+                            className="w-full bg-gray-700 rounded px-3 py-2"
+                            value={manualData.tags}
+                            onChange={(e) => setManualData({ ...manualData, tags: e.target.value })}
+                            placeholder="VRChat, Game, Horror"
                         />
                     </div>
 

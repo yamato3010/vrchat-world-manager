@@ -64,6 +64,9 @@ export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldD
         userMemo: '',
     })
 
+    const [tags, setTags] = useState<string[]>([])
+    const [newTagInput, setNewTagInput] = useState('')
+
     useEffect(() => {
         loadWorldDetail()
         loadGroups()
@@ -75,6 +78,22 @@ export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldD
             const data = await window.electronAPI.getWorldById(worldId)
             if (data) {
                 setWorld(data)
+
+                // Parse tags
+                let parsedTags: string[] = []
+                if (data.tags) {
+                    try {
+                        const parsed = JSON.parse(data.tags)
+                        if (Array.isArray(parsed)) {
+                            parsedTags = parsed
+                        }
+                    } catch (e) {
+                        // カンマ区切りの古いフォーマットのフォールバックがある場合
+                        parsedTags = data.tags.split(',').map(t => t.trim()).filter(t => t)
+                    }
+                }
+                setTags(parsedTags)
+
                 setEditData({
                     name: data.name,
                     authorName: data.authorName || '',
@@ -146,17 +165,49 @@ export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldD
                 description: world.description || '',
                 userMemo: world.userMemo || '',
             })
+            let parsedTags: string[] = []
+            if (world.tags) {
+                try {
+                    const parsed = JSON.parse(world.tags)
+                    if (Array.isArray(parsed)) parsedTags = parsed
+                } catch (e) {
+                    parsedTags = world.tags.split(',').map(t => t.trim()).filter(t => t)
+                }
+            }
+            setTags(parsedTags)
         }
         setIsEditing(false)
     }
 
     const handleSaveEdit = async () => {
         try {
-            const updatedWorld = await window.electronAPI.updateWorld(worldId, editData)
+            const updatePayload = {
+                ...editData,
+                tags: JSON.stringify(tags)
+            }
+            const updatedWorld = await window.electronAPI.updateWorld(worldId, updatePayload)
             setWorld(updatedWorld)
             setIsEditing(false)
         } catch (error) {
             console.error('Failed to update world:', error)
+        }
+    }
+
+    const handleAddTag = () => {
+        if (newTagInput.trim() && !tags.includes(newTagInput.trim())) {
+            setTags([...tags, newTagInput.trim()])
+            setNewTagInput('')
+        }
+    }
+
+    const handleRemoveTag = (tagToRemove: string) => {
+        setTags(tags.filter(tag => tag !== tagToRemove))
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            handleAddTag()
         }
     }
 
@@ -348,6 +399,46 @@ export function WorldDetail({ worldId, onBack, startInEditMode = false }: WorldD
                             VRChat ID: <code className="bg-gray-700 px-2 py-1 rounded">{world.vrchatWorldId}</code>
                         </div>
                     )}
+
+                    <div className="mt-6">
+                        <h2 className="text-xl font-semibold mb-2">タグ</h2>
+                        <div className="flex flex-wrap gap-2">
+                            {tags.map((tag, index) => (
+                                <span key={index} className="bg-gray-700 text-gray-300 px-3 py-1 rounded-full text-sm flex items-center">
+                                    {tag}
+                                    {isEditing && (
+                                        <button
+                                            onClick={() => handleRemoveTag(tag)}
+                                            className="ml-2 text-gray-500 hover:text-red-400 focus:outline-none"
+                                        >
+                                            ×
+                                        </button>
+                                    )}
+                                </span>
+                            ))}
+                            {isEditing && (
+                                <div className="flex items-center">
+                                    <input
+                                        type="text"
+                                        value={newTagInput}
+                                        onChange={(e) => setNewTagInput(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        placeholder="タグを追加"
+                                        className="bg-gray-700 text-white px-3 py-1 rounded-l-full text-sm focus:outline-none w-32"
+                                    />
+                                    <button
+                                        onClick={handleAddTag}
+                                        className="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded-r-full text-sm"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                        {!isEditing && tags.length === 0 && (
+                            <p className="text-gray-500 text-sm italic">タグはありません</p>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
