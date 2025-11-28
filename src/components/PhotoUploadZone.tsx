@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 interface PhotoUploadZoneProps {
-    onPhotoUploaded: () => void
+    onPhotoUploaded: (world: any) => void
     worldId?: number
 }
 
@@ -42,8 +42,8 @@ export function PhotoUploadZone({ onPhotoUploaded, worldId }: PhotoUploadZonePro
             const result = await window.electronAPI.importPhoto(filePath, worldId)
             setLastResult(result)
 
-            if (result.success) {
-                onPhotoUploaded()
+            if (result.success && result.world) {
+                onPhotoUploaded(result.world)
             }
         } catch (error: any) {
             setLastResult({
