@@ -16,7 +16,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateGroup: (id: number, data: any) => ipcRenderer.invoke('update-group', { id, data }),
     deleteGroup: (id: number, deleteWorlds: boolean) => ipcRenderer.invoke('delete-group', { id, deleteWorlds }),
     addWorldToGroup: (worldId: number, groupId: number) => ipcRenderer.invoke('add-world-to-group', { worldId, groupId }),
-    removeWorldFromGroup: (worldId: number, groupId: number) => ipcRenderer.invoke('remove-world-from-group', worldId, groupId),
+    removeWorldFromGroup: (worldId: number, groupId: number) => ipcRenderer.invoke('remove-world-from-group', { worldId, groupId }),
 
     // Photo API
     importPhoto: (filePath: string, worldId?: number) => ipcRenderer.invoke('import-photo', filePath, worldId),
