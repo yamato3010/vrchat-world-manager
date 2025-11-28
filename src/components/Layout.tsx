@@ -13,6 +13,8 @@ interface LayoutProps {
     refreshTrigger: number
     viewMode: 'grid' | 'list'
     onViewModeChange: (mode: 'grid' | 'list') => void
+    searchQuery: string
+    onSearchChange: (query: string) => void
 }
 
 export function Layout({
@@ -26,9 +28,12 @@ export function Layout({
     onAddPhoto,
     refreshTrigger,
     viewMode,
-    onViewModeChange
+    onViewModeChange,
+    searchQuery,
+    onSearchChange
 }: LayoutProps) {
     const [groupName, setGroupName] = useState<string>('')
+    const [searchExpanded, setSearchExpanded] = useState(false)
 
     useEffect(() => {
         const loadGroupName = async () => {
@@ -63,10 +68,33 @@ export function Layout({
                         {activeView === 'all' ? 'All Worlds' : groupName || 'Group View'}
                     </h1>
                     <div className="flex items-center gap-3">
-                        <div className="bg-gray-700 rounded-lg p-1 flex mr-2">
+                        {searchExpanded ? (
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => onSearchChange(e.target.value)}
+                                onBlur={() => {
+                                    if (!searchQuery) setSearchExpanded(false)
+                                }}
+                                placeholder="ワールド名、タグ、メモで検索..."
+                                className="bg-gray-700 text-white px-3 h-9 rounded border border-gray-600 focus:border-purple-500 focus:outline-none text-sm w-64"
+                                autoFocus
+                            />
+                        ) : (
+                            <button
+                                onClick={() => setSearchExpanded(true)}
+                                className="bg-gray-700 rounded-lg h-9 w-9 flex items-center justify-center text-gray-400 hover:text-gray-200"
+                                title="検索"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </button>
+                        )}
+                        <div className="bg-gray-700 rounded-lg h-9 flex">
                             <button
                                 onClick={() => onViewModeChange('grid')}
-                                className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-gray-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
+                                className={`px-2 rounded flex items-center justify-center ${viewMode === 'grid' ? 'bg-gray-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
                                 title="グリッド表示"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -75,7 +103,7 @@ export function Layout({
                             </button>
                             <button
                                 onClick={() => onViewModeChange('list')}
-                                className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-gray-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
+                                className={`px-2 rounded flex items-center justify-center ${viewMode === 'list' ? 'bg-gray-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
                                 title="リスト表示"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -85,13 +113,13 @@ export function Layout({
                         </div>
                         <button
                             onClick={onAddPhoto}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition-colors flex items-center gap-2"
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 h-9 rounded shadow transition-colors flex items-center gap-2"
                         >
                             <span>+</span> 写真を追加
                         </button>
                         <button
                             onClick={onAddWorld}
-                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded shadow transition-colors flex items-center gap-2"
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 h-9 rounded shadow transition-colors flex items-center gap-2"
                         >
                             <span>+</span> ワールドを追加
                         </button>

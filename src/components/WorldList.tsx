@@ -6,9 +6,10 @@ interface WorldListProps {
     onWorldClick: (worldId: number, shouldEdit?: boolean) => void
     groupId?: number
     viewMode: 'grid' | 'list'
+    searchQuery: string
 }
 
-export function WorldList({ refreshTrigger, onWorldClick, groupId, viewMode }: WorldListProps) {
+export function WorldList({ refreshTrigger, onWorldClick, groupId, viewMode, searchQuery }: WorldListProps) {
     const [worlds, setWorlds] = useState<World[]>([])
     const [loading, setLoading] = useState(true)
 
@@ -56,6 +57,27 @@ export function WorldList({ refreshTrigger, onWorldClick, groupId, viewMode }: W
         }
     }
 
+    // 検索ロジック
+    const filteredWorlds = worlds.filter(world => {
+        if (!searchQuery) return true
+        const query = searchQuery.toLowerCase()
+
+        // ワールド名で検索
+        if (world.name.toLowerCase().includes(query)) return true
+
+        // 作者名で検索
+        if (world.authorName?.toLowerCase().includes(query)) return true
+
+        // メモで検索
+        if (world.userMemo?.toLowerCase().includes(query)) return true
+
+        // タグで検索
+        const tags = parseTags(world.tags)
+        if (tags.some(tag => tag.toLowerCase().includes(query))) return true
+
+        return false
+    })
+
     if (viewMode === 'list') {
         return (
             <div className="p-4">
@@ -71,7 +93,7 @@ export function WorldList({ refreshTrigger, onWorldClick, groupId, viewMode }: W
                         </tr>
                     </thead>
                     <tbody>
-                        {worlds.map((world) => {
+                        {filteredWorlds.map((world) => {
                             const tags = parseTags(world.tags)
                             return (
                                 <tr
@@ -148,7 +170,7 @@ export function WorldList({ refreshTrigger, onWorldClick, groupId, viewMode }: W
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-            {worlds.map((world) => {
+            {filteredWorlds.map((world) => {
                 const tags = parseTags(world.tags)
                 return (
                     <div key={world.id} className="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700 cursor-pointer hover:border-purple-500 transition-colors">

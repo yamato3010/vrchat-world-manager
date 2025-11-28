@@ -22,6 +22,7 @@ function App() {
     const [startInEditMode, setStartInEditMode] = useState(false)
 
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+    const [searchQuery, setSearchQuery] = useState('')
 
     const handleWorldAdded = () => {
         setRefreshTrigger(prev => prev + 1)
@@ -88,6 +89,8 @@ function App() {
             refreshTrigger={refreshTrigger}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
         >
             {selectedWorldId ? (
                 <WorldDetail worldId={selectedWorldId} onBack={handleBackToList} startInEditMode={startInEditMode} />
@@ -97,6 +100,7 @@ function App() {
                     onWorldClick={handleWorldClick}
                     groupId={activeView === 'group' ? activeGroupId : undefined}
                     viewMode={viewMode}
+                    searchQuery={searchQuery}
                 />
             )}
 
