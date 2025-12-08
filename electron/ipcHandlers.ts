@@ -1,9 +1,11 @@
-import { ipcMain, shell } from 'electron'
+import { ipcMain, shell, dialog, BrowserWindow } from 'electron'
 import { PrismaClient } from '@prisma/client'
 import axios from 'axios'
 import { parsePNGMetadata } from './utils/pngMetadata'
 import * as path from 'path'
 import * as fs from 'fs'
+import { loadConfig, saveConfig } from './configManager'
+import { scanForNewPhotos } from './photoScanner'
 
 const prisma = new PrismaClient()
 
@@ -287,6 +289,97 @@ export function registerIpcHandlers() {
             return image.toString('base64')
         } catch (error) {
             console.error('Failed to read image:', error)
+            throw error
+        }
+    })
+
+    // Config management
+    ipcMain.handle('select-directory', async (event) => {
+        const win = BrowserWindow.fromWebContents(event.sender)
+        if (!win) return null
+
+        const result = await dialog.showOpenDialog(win, {
+            properties: ['openDirectory'],
+        }) as unknown as Electron.OpenDialogReturnValue
+
+        if (result.canceled || result.filePaths.length === 0) {
+            return null
+        }
+        return result.filePaths[0]
+    })
+
+    ipcMain.handle('get-config', async () => {
+        return loadConfig()
+    })
+
+    ipcMain.handle('update-config', async (_, config: any) => {
+        await saveConfig(config)
+        return { success: true }
+    })
+
+    // World suggestions
+    ipcMain.handle('get-world-suggestions', async () => {
+        const config = await loadConfig()
+        if (!config.photoDirectoryPath) {
+            return []
+        }
+        return scanForNewPhotos(config.photoDirectoryPath, config.scanPeriodDays || 14, config.dismissedWorldIds || [])
+    })
+
+    ipcMain.handle('accept-suggestion', async (_, { worldId, worldName, worldAuthor, worldThumbnail, groupId }: any) => {
+        try {
+            // VRChat APIからワールド情報を取得
+            const response = await axios.get(`https://api.vrchat.cloud/api/1/worlds/${worldId}`, {
+                headers: {
+                    'User-Agent': 'VRChatWorldManager/1.0 (yamato3010)',
+                },
+            })
+            const worldData = response.data
+            const filteredTags = filterTags(worldData.tags || [])
+
+            // ワールドを作成
+            const world = await prisma.world.create({
+                data: {
+                    vrchatWorldId: worldId,
+                    name: worldName || worldData.name || 'Unknown World',
+                    authorName: worldAuthor || worldData.authorName,
+                    description: worldData.description,
+                    thumbnailUrl: worldThumbnail || worldData.thumbnailImageUrl || worldData.imageUrl,
+                    tags: JSON.stringify(filteredTags),
+                },
+            })
+
+            // グループに追加（指定されている場合）
+            if (groupId) {
+                await prisma.worldOnGroup.create({
+                    data: {
+                        worldId: world.id,
+                        groupId,
+                    },
+                })
+            }
+
+            return world
+        } catch (error) {
+            console.error('Failed to accept suggestion:', error)
+            throw error
+        }
+    })
+
+    ipcMain.handle('dismiss-suggestion', async (_, worldId: string) => {
+        try {
+            const config = await loadConfig()
+            const dismissedWorldIds = config.dismissedWorldIds || []
+
+            // 既に無視リストに含まれていない場合のみ追加
+            if (!dismissedWorldIds.includes(worldId)) {
+                dismissedWorldIds.push(worldId)
+                await saveConfig({ ...config, dismissedWorldIds })
+            }
+
+            return { success: true }
+        } catch (error) {
+            console.error('Failed to dismiss suggestion:', error)
             throw error
         }
     })

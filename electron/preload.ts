@@ -27,6 +27,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getPathForFile: (file: File) => webUtils.getPathForFile(file),
     readImageBase64: (filePath: string) => ipcRenderer.invoke('read-image-base64', filePath),
     openExternalLink: (url: string) => ipcRenderer.invoke('open-external-link', url),
+
+    // Config management
+    selectDirectory: () => ipcRenderer.invoke('select-directory'),
+    getConfig: () => ipcRenderer.invoke('get-config'),
+    updateConfig: (config: any) => ipcRenderer.invoke('update-config', config),
+
+    // World suggestions
+    getWorldSuggestions: () => ipcRenderer.invoke('get-world-suggestions'),
+    acceptSuggestion: (suggestion: any) => ipcRenderer.invoke('accept-suggestion', suggestion),
+    dismissSuggestion: (worldId: string) => ipcRenderer.invoke('dismiss-suggestion', worldId),
 })
 
 console.log('Preload script loaded');

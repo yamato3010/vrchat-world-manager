@@ -23,7 +23,6 @@ export function parsePNGMetadata(filePath: string): ParseResult {
     const s = png.readFileSync(filePath)
     // split
     const list = png.splitChunk(s)
-    console.log(list)
 
     /** listの中のオブジェクトは以下のようになっている
     * [{

@@ -6,7 +6,8 @@ import { DeleteGroupModal } from './components/DeleteGroupModal'
 import { AddPhotoModal } from './components/AddPhotoModal'
 import { WorldDetail } from './pages/WorldDetail'
 import { Layout } from './components/Layout'
-import { Group } from './types'
+import { PhotoDirectorySetupModal } from './components/PhotoDirectorySetupModal'
+import { Group, WorldSuggestion, Config } from './types'
 import './index.css'
 
 function App() {
@@ -14,12 +15,15 @@ function App() {
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false)
     const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false)
     const [isDeleteGroupModalOpen, setIsDeleteGroupModalOpen] = useState(false)
+    const [isSetupModalOpen, setIsSetupModalOpen] = useState(false)
     const [groupToDelete, setGroupToDelete] = useState<Group | null>(null)
     const [refreshTrigger, setRefreshTrigger] = useState(0)
     const [activeView, setActiveView] = useState<'all' | 'group'>('all')
     const [activeGroupId, setActiveGroupId] = useState<number | undefined>(undefined)
     const [selectedWorldId, setSelectedWorldId] = useState<number | null>(null)
     const [startInEditMode, setStartInEditMode] = useState(false)
+    const [suggestions, setSuggestions] = useState<WorldSuggestion[]>([])
+    const [config, setConfig] = useState<Config>({})
 
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
     const [searchQuery, setSearchQuery] = useState('')
@@ -31,6 +35,24 @@ function App() {
         }
         window.addEventListener('groups-changed', handleGroupsChanged)
         return () => window.removeEventListener('groups-changed', handleGroupsChanged)
+    }, [])
+
+    // 起動時に設定を読み込んで写真をスキャン
+    useEffect(() => {
+        const loadConfigAndScan = async () => {
+            try {
+                const loadedConfig = await window.electronAPI.getConfig()
+                setConfig(loadedConfig)
+
+                if (loadedConfig.photoDirectoryPath) {
+                    const worldSuggestions = await window.electronAPI.getWorldSuggestions()
+                    setSuggestions(worldSuggestions)
+                }
+            } catch (error) {
+                console.error('Failed to load config or scan photos:', error)
+            }
+        }
+        loadConfigAndScan()
     }, [])
 
     const handleWorldAdded = () => {
@@ -86,6 +108,50 @@ function App() {
         }
     }
 
+    const handleAcceptSuggestion = async (suggestion: WorldSuggestion) => {
+        try {
+            await window.electronAPI.acceptSuggestion({
+                worldId: suggestion.worldId,
+                worldName: suggestion.worldName,
+                worldAuthor: suggestion.worldAuthor,
+                worldThumbnail: suggestion.worldThumbnail,
+                groupId: activeView === 'group' ? activeGroupId : undefined,
+            })
+
+            // 提案リストから削除
+            setSuggestions(prev => prev.filter(s => s.id !== suggestion.id))
+            // ワールドリストを更新
+            setRefreshTrigger(prev => prev + 1)
+        } catch (error) {
+            console.error('Failed to accept suggestion:', error)
+            alert('ワールドの追加に失敗しました')
+        }
+    }
+
+    const handleDismissSuggestion = async (suggestion: WorldSuggestion) => {
+        try {
+            await window.electronAPI.dismissSuggestion(suggestion.worldId)
+            setSuggestions(prev => prev.filter(s => s.id !== suggestion.id))
+        } catch (error) {
+            console.error('Failed to dismiss suggestion:', error)
+        }
+    }
+
+    const handleSaveConfig = async (newConfig: Config) => {
+        try {
+            await window.electronAPI.updateConfig(newConfig)
+            setConfig(newConfig)
+
+            // 設定保存後にスキャンを実行
+            if (newConfig.photoDirectoryPath) {
+                const worldSuggestions = await window.electronAPI.getWorldSuggestions()
+                setSuggestions(worldSuggestions)
+            }
+        } catch (error) {
+            console.error('Failed to save config:', error)
+        }
+    }
+
     return (
         <Layout
             activeView={activeView}
@@ -95,6 +161,7 @@ function App() {
             onDeleteGroup={handleDeleteGroup}
             onAddWorld={() => setIsModalOpen(true)}
             onAddPhoto={() => setIsPhotoModalOpen(true)}
+            onOpenSettings={() => setIsSetupModalOpen(true)}
             refreshTrigger={refreshTrigger}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
@@ -110,6 +177,9 @@ function App() {
                     groupId={activeView === 'group' ? activeGroupId : undefined}
                     viewMode={viewMode}
                     searchQuery={searchQuery}
+                    suggestions={activeView === 'all' ? suggestions : undefined}
+                    onAcceptSuggestion={handleAcceptSuggestion}
+                    onDismissSuggestion={handleDismissSuggestion}
                 />
             )}
 
@@ -140,6 +210,13 @@ function App() {
                 isOpen={isPhotoModalOpen}
                 onClose={() => setIsPhotoModalOpen(false)}
                 onPhotoAdded={handlePhotoAdded}
+            />
+
+            <PhotoDirectorySetupModal
+                isOpen={isSetupModalOpen}
+                onClose={() => setIsSetupModalOpen(false)}
+                onSave={handleSaveConfig}
+                initialConfig={config}
             />
         </Layout>
     )

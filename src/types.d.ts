@@ -44,6 +44,23 @@ export interface Photo {
     updatedAt: Date
 }
 
+export interface Config {
+    photoDirectoryPath?: string
+    scanPeriodDays?: number
+    dismissedWorldIds?: string[]
+}
+
+export interface WorldSuggestion {
+    id: string
+    photoFilePath: string
+    photoFileName: string
+    worldId: string
+    worldName?: string
+    worldAuthor?: string
+    worldThumbnail?: string
+    detectedAt: string
+}
+
 export interface CreateGroupData {
     name: string
     description?: string
@@ -83,6 +100,16 @@ export interface ElectronAPI {
     getPathForFile: (file: File) => string
     readImageBase64: (filePath: string) => Promise<string>
     openExternalLink: (url: string) => Promise<void>
+
+    // Config management
+    selectDirectory: () => Promise<string | null>
+    getConfig: () => Promise<Config>
+    updateConfig: (config: Config) => Promise<{ success: boolean }>
+
+    // World suggestions
+    getWorldSuggestions: () => Promise<WorldSuggestion[]>
+    acceptSuggestion: (suggestion: { worldId: string; worldName?: string; worldAuthor?: string; worldThumbnail?: string; groupId?: number }) => Promise<World>
+    dismissSuggestion: (worldId: string) => Promise<{ success: boolean }>
 }
 
 declare global {
