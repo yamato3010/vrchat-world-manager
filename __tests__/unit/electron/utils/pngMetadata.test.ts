@@ -4,7 +4,13 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 describe('pngMetadata', () => {
-    const testFixturesDir = path.join(__dirname, '../../fixtures') // 正しいパスに修正
+    const testFixturesDir = path.join(__dirname, '../../fixtures')
+
+    // テスト前にディレクトリが存在することを確認
+    if (!fs.existsSync(testFixturesDir)) {
+        fs.mkdirSync(testFixturesDir, { recursive: true })
+    }
+
     const testPNGPath = path.join(testFixturesDir, 'test-vrchat-photo.png')
 
     describe('parsePNGMetadata', () => {
