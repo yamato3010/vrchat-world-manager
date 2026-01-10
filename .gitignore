@@ -74,3 +74,6 @@ coverage/
 
 vite.config.js
 vite.config.d.ts
+
+# Test Results
+test-results/

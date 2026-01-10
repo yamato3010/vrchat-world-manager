@@ -17,12 +17,7 @@ export interface WorldSuggestion {
     detectedAt: string
 }
 
-const filterTags = (tags: string[]): string[] => {
-    if (!Array.isArray(tags)) return []
-    return tags
-        .filter(tag => tag.startsWith('author_tag_'))
-        .map(tag => tag.replace('author_tag_', ''))
-}
+
 
 export async function scanForNewPhotos(dirPath: string, scanPeriodDays: number = 14, dismissedWorldIds: string[] = []): Promise<WorldSuggestion[]> {
     try {
