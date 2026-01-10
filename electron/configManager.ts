@@ -10,6 +10,7 @@ export interface Config {
 
 const DEFAULT_CONFIG: Config = {
     scanPeriodDays: 14,
+    dismissedWorldIds: [],
 }
 
 let configPath: string
@@ -27,6 +28,9 @@ export async function loadConfig(): Promise<Config> {
     try {
         if (fs.existsSync(filePath)) {
             const data = await fs.promises.readFile(filePath, 'utf-8')
+            if (!data.trim()) {
+                return DEFAULT_CONFIG
+            }
             const config = JSON.parse(data)
             // デフォルト値とマージ
             return { ...DEFAULT_CONFIG, ...config }
@@ -40,6 +44,10 @@ export async function loadConfig(): Promise<Config> {
 export async function saveConfig(config: Config): Promise<void> {
     const filePath = getConfigPath()
     try {
+        const dirPath = path.dirname(filePath)
+        if (!fs.existsSync(dirPath)) {
+            await fs.promises.mkdir(dirPath, { recursive: true })
+        }
         const data = JSON.stringify(config, null, 2)
         await fs.promises.writeFile(filePath, data, 'utf-8')
     } catch (error) {
