@@ -11,10 +11,16 @@ let win: BrowserWindow | null
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
 function createWindow() {
+    const preloadPath = path.join(__dirname, 'preload.js')
+    console.log('Preload path:', preloadPath)
+
     win = new BrowserWindow({
         icon: path.join(process.env.VITE_PUBLIC!, 'electron-vite.svg'),
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
+            preload: preloadPath,
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: false, // Added to troubleshooting preload loading
         },
     })
 
