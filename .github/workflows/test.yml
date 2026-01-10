@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   test:
     name: Run Unit & Integration Tests
@@ -37,9 +41,9 @@ jobs:
     - name: Run Tests
       run: npm run test:coverage
 
-    # カバレッジレポートをアーティファクトとして保存する予定
-    # - name: Upload coverage reports to Codecov
-    #   uses: codecov/codecov-action@v5
-    #   with:
-    #     token: ${{ secrets.CODECOV_TOKEN }}
-    #     slug: yamato3010/vrchat-world-manager
+    - name: Report Coverage
+      if: always() # テストが失敗しても実行
+      uses: davelosert/vitest-coverage-report-action@v2
+      with:
+        json-summary-path: './coverage/coverage-summary.json'
+        json-final-path: './coverage/coverage-final.json'
