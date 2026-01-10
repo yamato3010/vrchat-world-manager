@@ -117,75 +117,75 @@ describe('ipcHandlers', () => {
         return handlers[channel]({}, ...args)
     }
 
-    describe('World CRUD', () => {
-        it('get-worlds: filters by group if provided', async () => {
+    describe('ワールド管理 (World CRUD)', () => {
+        it('get-worlds: グループIDでフィルタリングできる (WORLD-002)', async () => {
             prisma.world.findMany.mockResolvedValue([])
             await invoke('get-worlds', 123)
             expect(prisma.world.findMany).toHaveBeenCalledWith(expect.objectContaining({
                 where: { groups: { some: { groupId: 123 } } }
             }))
 
-            await invoke('get-worlds')
+            await invoke('get-worlds') // WORLD-001
             expect(prisma.world.findMany).toHaveBeenCalledWith(expect.objectContaining({
                 include: { groups: true }
             }))
         })
 
-        it('create-world: creates a world', async () => {
+        it('create-world: ワールドを作成できる (WORLD-011)', async () => {
             prisma.world.create.mockResolvedValue({ id: 1 })
             await invoke('create-world', { vrchatWorldId: 'w1', name: 'N' })
             expect(prisma.world.create).toHaveBeenCalled()
         })
 
-        it('delete-world: deletes a world', async () => {
+        it('delete-world: ワールドを削除できる (WORLD-031)', async () => {
             prisma.world.delete.mockResolvedValue({ id: 1 })
             await invoke('delete-world', 1)
             expect(prisma.world.delete).toHaveBeenCalledWith({ where: { id: 1 } })
         })
 
-        it('get-world-by-id: returns world', async () => {
+        it('get-world-by-id: ワールドを取得できる', async () => {
             prisma.world.findUnique.mockResolvedValue({ id: 1 })
             await invoke('get-world-by-id', 1)
             expect(prisma.world.findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 1 } }))
         })
 
-        it('update-world: updates a world', async () => {
+        it('update-world: ワールドを更新できる (WORLD-021)', async () => {
             prisma.world.update.mockResolvedValue({ id: 1 })
             await invoke('update-world', { id: 1, data: { name: 'U' } })
             expect(prisma.world.update).toHaveBeenCalled()
         })
     })
 
-    describe('Group CRUD', () => {
-        it('get-groups: returns groups', async () => {
+    describe('グループ管理 (Group CRUD)', () => {
+        it('get-groups: グループ一覧を取得できる', async () => {
             prisma.group.findMany.mockResolvedValue([])
             await invoke('get-groups')
             expect(prisma.group.findMany).toHaveBeenCalled()
         })
 
-        it('get-group-by-id: returns group', async () => {
+        it('get-group-by-id: グループを取得できる', async () => {
             prisma.group.findUnique.mockResolvedValue({ id: 1 })
             await invoke('get-group-by-id', 1)
             expect(prisma.group.findUnique).toHaveBeenCalled()
         })
 
-        it('create-group: creates a group', async () => {
+        it('create-group: グループを作成できる (GROUP-001)', async () => {
             await invoke('create-group', { name: 'G1' })
             expect(prisma.group.create).toHaveBeenCalled()
         })
 
-        it('update-group: updates a group', async () => {
+        it('update-group: グループを更新できる', async () => {
             await invoke('update-group', { id: 1, data: { name: 'G2' } })
             expect(prisma.group.update).toHaveBeenCalled()
         })
 
-        it('delete-group: deletes group only', async () => {
+        it('delete-group: グループのみ削除できる (GROUP-011)', async () => {
             await invoke('delete-group', { id: 1, deleteWorlds: false })
             expect(prisma.group.delete).toHaveBeenCalledWith({ where: { id: 1 } })
             expect(prisma.world.deleteMany).not.toHaveBeenCalled()
         })
 
-        it('delete-group: deletes group and worlds', async () => {
+        it('delete-group: グループと関連ワールドを削除できる (GROUP-012)', async () => {
             prisma.worldOnGroup.findMany.mockResolvedValue([{ worldId: 10 }])
             await invoke('delete-group', { id: 1, deleteWorlds: true })
             expect(prisma.group.delete).toHaveBeenCalled()
@@ -193,8 +193,8 @@ describe('ipcHandlers', () => {
         })
     })
 
-    describe('Photo Management', () => {
-        it('import-photo: imports successfully', async () => {
+    describe('写真管理 (Photo Management)', () => {
+        it('import-photo: 写真をインポートできる (PHOTO-001)', async () => {
             (parsePNGMetadata as Mock).mockReturnValue({ metadata: {}, worldId: 'wrld_ex' })
             prisma.world.findUnique.mockResolvedValue({ id: 100, vrchatWorldId: 'wrld_ex' })
             prisma.photo.create.mockResolvedValue({ id: 1, worldId: 100 })
@@ -204,18 +204,18 @@ describe('ipcHandlers', () => {
             expect(prisma.photo.create).toHaveBeenCalled()
         })
 
-        it('get-photos-by-world: returns photos', async () => { // Corrected channel name
+        it('get-photos-by-world: ワールドIDに紐づく写真を取得できる (PHOTO-011)', async () => { // Corrected channel name
             prisma.photo.findMany.mockResolvedValue([])
             await invoke('get-photos-by-world', 100)
             expect(prisma.photo.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { worldId: 100 } }))
         })
 
-        it('delete-photo: deletes photo', async () => {
+        it('delete-photo: 写真を削除できる (PHOTO-021)', async () => {
             await invoke('delete-photo', 1)
             expect(prisma.photo.delete).toHaveBeenCalledWith({ where: { id: 1 } })
         })
 
-        it('read-image-base64: reads file', async () => { // Corrected channel name
+        it('read-image-base64: 画像を読み込んでBase64で返せる (PHOTO-031)', async () => { // Corrected channel name
             const buffer = Buffer.from('test')
                 ; (fs.promises.readFile as Mock).mockResolvedValue(buffer)
 
@@ -224,25 +224,25 @@ describe('ipcHandlers', () => {
         })
     })
 
-    describe('Associations', () => {
-        it('add-world-to-group', async () => {
+    describe('関連付け (Associations)', () => {
+        it('add-world-to-group: グループにワールドを追加できる (ASSOC-001)', async () => {
             await invoke('add-world-to-group', { worldId: 1, groupId: 2 })
             expect(prisma.worldOnGroup.create).toHaveBeenCalled()
         })
-        it('remove-world-from-group', async () => {
+        it('remove-world-from-group: グループからワールドを削除できる (ASSOC-002)', async () => {
             await invoke('remove-world-from-group', { worldId: 1, groupId: 2 })
             expect(prisma.worldOnGroup.delete).toHaveBeenCalled()
         })
     })
 
-    describe('Suggestions', () => {
-        it('get-world-suggestions', async () => {
+    describe('提案機能 (Suggestions)', () => {
+        it('get-world-suggestions: 提案リストを取得できる (SUGG-001)', async () => {
             (scanForNewPhotos as Mock).mockResolvedValue([])
             await invoke('get-world-suggestions')
             expect(scanForNewPhotos).toHaveBeenCalled()
         })
 
-        it('accept-suggestion', async () => {
+        it('accept-suggestion: 提案を採用してワールド登録できる (SUGG-011)', async () => {
             (axios.get as Mock).mockResolvedValue({ data: { tags: [] } })
             prisma.world.create.mockResolvedValue({ id: 1 })
 
@@ -253,20 +253,20 @@ describe('ipcHandlers', () => {
             expect(prisma.worldOnGroup.create).toHaveBeenCalled() // if groupId provided
         })
 
-        it('dismiss-suggestion', async () => {
+        it('dismiss-suggestion: 提案を却下して無視リストに追加できる (SUGG-021)', async () => {
             (loadConfig as Mock).mockResolvedValue({ dismissedWorldIds: [] })
             await invoke('dismiss-suggestion', 'wrld_d')
             expect(saveConfig).toHaveBeenCalled()
         })
     })
 
-    describe('Error Handling & Edge Cases', () => {
-        it('fetch-vrchat-world: handles API error', async () => {
+    describe('エラー処理・エッジケース (Error Handling & Edge Cases)', () => {
+        it('fetch-vrchat-world: APIエラーを処理できる (API-001)', async () => {
             (axios.get as Mock).mockRejectedValue(new Error('API Error'))
             await expect(invoke('fetch-vrchat-world', 'w1')).rejects.toThrow('API Error')
         })
 
-        it('import-photo: uses targetWorldId if provided', async () => {
+        it('import-photo: worldIdが指定された場合それを使用する (PHOTO-003)', async () => {
             const result = await invoke('import-photo', '/p.png', 999)
             expect(result.success).toBe(true)
             // Should fetch world 999 from DB or API. 
@@ -274,7 +274,7 @@ describe('ipcHandlers', () => {
             expect(prisma.world.findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 999 } }))
         })
 
-        it('import-photo: creates new world if not in DB', async () => {
+        it('import-photo: DBにないワールドの場合新規作成する (PHOTO-002)', async () => {
             (parsePNGMetadata as Mock).mockReturnValue({ metadata: {}, worldId: 'wrld_new' })
             prisma.world.findUnique.mockResolvedValueOnce(null) // Not in DB
 
@@ -293,14 +293,14 @@ describe('ipcHandlers', () => {
             expect(prisma.world.create).toHaveBeenCalled()
         })
 
-        it('import-photo: handles missing world ID in metadata', async () => {
+        it('import-photo: メタデータにworldIdがない場合エラーになる (PHOTO-004)', async () => {
             (parsePNGMetadata as Mock).mockReturnValue({ metadata: {}, worldId: null })
             const result = await invoke('import-photo', '/no_id.png')
             expect(result.success).toBe(false)
             expect(result.error).toContain('World ID not found')
         })
 
-        it('import-photo: handles API error during new world creation', async () => {
+        it('import-photo: 新規ワールド作成時のAPIエラーを処理できる (PHOTO-005)', async () => {
             (parsePNGMetadata as Mock).mockReturnValue({ metadata: {}, worldId: 'wrld_err' })
             prisma.world.findUnique.mockResolvedValue(null)
                 ; (axios.get as Mock).mockRejectedValue(new Error('API Fail'))
@@ -310,7 +310,7 @@ describe('ipcHandlers', () => {
             expect(result.error).toContain('failed to fetch details')
         })
 
-        it('delete-group: handles empty world list when deleting worlds', async () => {
+        it('delete-group: 削除対象のワールドがない場合も正常に動作する (GROUP-013)', async () => {
             prisma.worldOnGroup.findMany.mockResolvedValue([])
             await invoke('delete-group', { id: 1, deleteWorlds: true })
             expect(prisma.group.delete).toHaveBeenCalled()
@@ -318,14 +318,14 @@ describe('ipcHandlers', () => {
             expect(prisma.world.deleteMany).not.toHaveBeenCalled()
         })
 
-        it('select-directory: handles cancellation', async () => {
+        it('select-directory: キャンセルされた場合はnullを返す (SYS-001)', async () => {
             ; (BrowserWindow.fromWebContents as Mock).mockReturnValue({})
                 ; (dialog.showOpenDialog as Mock).mockResolvedValue({ canceled: true, filePaths: [] })
             const res = await invoke('select-directory')
             expect(res).toBeNull()
         })
 
-        it('fetch-vrchat-world: handles no tags', async () => {
+        it('fetch-vrchat-world: タグがない場合も正常に処理する (API-002)', async () => {
             ; (axios.get as Mock).mockResolvedValue({
                 data: { id: 'w2', name: 'No Tags', tags: null }
             })
@@ -333,40 +333,40 @@ describe('ipcHandlers', () => {
             expect(result.tags).toBeNull()
         })
 
-        it('select-directory: handles no browser window', async () => {
+        it('select-directory: ブラウザウィンドウがない場合nullを返す (SYS-002)', async () => {
             (BrowserWindow.fromWebContents as Mock).mockReturnValue(null)
             const res = await invoke('select-directory')
             expect(res).toBeNull()
         })
 
-        it('get-world-suggestions: returns empty if no config path', async () => {
+        it('get-world-suggestions: configパスがない場合空配列を返す (SUGG-002)', async () => {
             (loadConfig as Mock).mockResolvedValue({}) // No photoDirectoryPath
             const res = await invoke('get-world-suggestions')
             expect(res).toEqual([])
         })
 
-        it('dismiss-suggestion: ignores duplicate dismissal', async () => {
+        it('dismiss-suggestion: 既に無視リストにある場合は追加しない (SUGG-022)', async () => {
             (loadConfig as Mock).mockResolvedValue({ dismissedWorldIds: ['w1'] })
             await invoke('dismiss-suggestion', 'w1')
             // Should not save since already there
             expect(saveConfig).not.toHaveBeenCalled()
         })
 
-        it('dismiss-suggestion: handles error', async () => {
+        it('dismiss-suggestion: Configエラーを処理できる (SUGG-023)', async () => {
             (loadConfig as Mock).mockRejectedValue(new Error('Config Error'))
             await expect(invoke('dismiss-suggestion', 'w1')).rejects.toThrow('Config Error')
         })
 
-        it('accept-suggestion: handles error', async () => {
+        it('accept-suggestion: APIエラーを処理できる (SUGG-012)', async () => {
             (axios.get as Mock).mockRejectedValue(new Error('API Error'))
             await expect(invoke('accept-suggestion', { worldId: 'w1' })).rejects.toThrow('API Error')
         })
 
-        it('read-image-base64: handles error', async () => {
+        it('read-image-base64: 読み込みエラーを処理できる (PHOTO-032)', async () => {
             (fs.promises.readFile as Mock).mockRejectedValue(new Error('Read Error'))
             await expect(invoke('read-image-base64', '/bad.png')).rejects.toThrow('Read Error')
         })
-        it('fetch-vrchat-world: handles invalid tags (non-array)', async () => {
+        it('fetch-vrchat-world: 不正なタグ形式の場合空配列を返す (API-003)', async () => {
             ; (axios.get as Mock).mockResolvedValue({
                 data: { id: 'w3', tags: 'invalid' }
             })
@@ -374,7 +374,7 @@ describe('ipcHandlers', () => {
             expect(result.tags).toEqual([])
         })
 
-        it('import-photo: uses defaults for missing world data', async () => {
+        it('import-photo: ワールド詳細が不足している場合はデフォルト値を使用する (PHOTO-006)', async () => {
             (parsePNGMetadata as Mock).mockReturnValue({ metadata: {}, worldId: 'wrld_unk' })
             prisma.world.findUnique.mockResolvedValue(null)
                 ; (axios.get as Mock).mockResolvedValue({
@@ -390,7 +390,7 @@ describe('ipcHandlers', () => {
             }))
         })
 
-        it('get-world-suggestions: uses provided config values', async () => {
+        it('get-world-suggestions: 設定値を使用してスキャンを行う (SUGG-003)', async () => {
             (loadConfig as Mock).mockResolvedValue({
                 photoDirectoryPath: '/path',
                 scanPeriodDays: 30,
@@ -403,20 +403,20 @@ describe('ipcHandlers', () => {
         })
     })
 
-    describe('Config & Other', () => {
-        it('select-directory', async () => {
+    describe('設定・その他 (Config & Other)', () => {
+        it('select-directory: ディレクトリを選択できる', async () => {
             ; (dialog.showOpenDialog as Mock).mockResolvedValue({ canceled: false, filePaths: ['/path'] })
                 ; (BrowserWindow.fromWebContents as Mock).mockReturnValue({})
             const res = await invoke('select-directory')
             expect(res).toBe('/path')
         })
 
-        it('update-config', async () => {
+        it('update-config: 設定を更新できる', async () => {
             await invoke('update-config', { key: 'val' })
             expect(saveConfig).toHaveBeenCalled()
         })
 
-        it('open-external-link', async () => {
+        it('open-external-link: 外部リンクを開ける', async () => {
             await invoke('open-external-link', 'https://example.com')
             expect(shell.openExternal).toHaveBeenCalledWith('https://example.com')
         })

@@ -67,7 +67,7 @@ describe('photoScanner', () => {
     })
 
     describe('scanForNewPhotos', () => {
-        it('指定期間内のPNG画像をスキャンできる', async () => {
+        it('指定期間内のPNG画像をスキャンできる (SCAN-001)', async () => {
             // ファイル名に valid-vrchat を含めることでモックがworldIdを返すようにする
             const recentDate = new Date()
             const fileName = `VRChat_${recentDate.getFullYear()}-01-01_12-00-00_valid-vrchat.png`
@@ -101,7 +101,7 @@ describe('photoScanner', () => {
             expect(result[0].worldName).toBe('Test World')
         })
 
-        it('ディレクトリが存在しない場合でもエラーにならない', async () => {
+        it('ディレクトリが存在しない場合でもエラーにならない (SCAN-004)', async () => {
             const nonExistentDir = '/tmp/non-existent-directory'
 
             const result = await scanForNewPhotos(nonExistentDir, 14, [])
@@ -110,7 +110,7 @@ describe('photoScanner', () => {
             expect(Array.isArray(result)).toBe(true)
         })
 
-        it('無視リストに含まれるワールドはスキップされる', async () => {
+        it('無視リストに含まれるワールドはスキップされる (SCAN-003)', async () => {
             const dismissedWorldIds = ['wrld_test-world-12345']
 
             // VRChat写真を作成
@@ -130,7 +130,7 @@ describe('photoScanner', () => {
             expect(result).toBeDefined()
         })
 
-        it('指定期間外の写真はスキャンしない', async () => {
+        it('指定期間外の写真はスキャンしない (SCAN-002)', async () => {
             // 古い日付のファイルを作成
             const oldFileName = 'VRChat_2020-01-01_12-00-00.png'
             const oldFilePath = path.join(testPhotoDir, oldFileName)

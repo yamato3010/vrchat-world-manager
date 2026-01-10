@@ -14,7 +14,7 @@ describe('pngMetadata', () => {
     const testPNGPath = path.join(testFixturesDir, 'test-vrchat-photo.png')
 
     describe('parsePNGMetadata', () => {
-        it('VRChat写真からワールドIDを正しく抽出できる', () => {
+        it('VRChat写真からワールドIDを正しく抽出できる (META-001)', () => {
             // テスト用のPNGファイルが存在する場合のみテストを実行
             if (!fs.existsSync(testPNGPath)) {
                 console.warn('Test PNG file not found, skipping this test')
@@ -32,7 +32,7 @@ describe('pngMetadata', () => {
             }
         })
 
-        it('存在しないファイルパスの場合はエラーをスロー', () => {
+        it('存在しないファイルパスの場合はエラーをスロー (META-002)', () => {
             const nonExistentPath = path.join(testFixturesDir, 'non-existent.png')
 
             expect(() => {
@@ -40,7 +40,7 @@ describe('pngMetadata', () => {
             }).toThrow()
         })
 
-        it('PNGファイルでない場合は正しく処理される', () => {
+        it('PNGファイルでない場合は正しく処理される (META-003)', () => {
             // テキストファイルを一時的に作成
             const tempTextFile = path.join(testFixturesDir, 'temp-test.txt')
             fs.writeFileSync(tempTextFile, 'This is not a PNG file')
@@ -60,7 +60,7 @@ describe('pngMetadata', () => {
             }
         })
 
-        it('ワールドIDを含まないPNG画像の場合はworldIdがnullになる', () => {
+        it('ワールドIDを含まないPNG画像の場合はworldIdがnullになる (META-004)', () => {
             // 最小限の有効なPNGファイルを作成（メタデータなし）
             const minimalPNGPath = path.join(testFixturesDir, 'minimal.png')
 
