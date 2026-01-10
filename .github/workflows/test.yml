@@ -1,0 +1,45 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    name: Run Unit & Integration Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Generate Prisma Client
+      run: npx prisma generate
+
+    # データベースのセットアップが必要な場合はここに追加する予定
+    # 今回はインメモリDBやモックを使用しているためスキップ
+
+    - name: Run Tests
+      run: npm run test:coverage
+
+    # カバレッジレポートをアーティファクトとして保存する予定
+    # - name: Upload coverage reports to Codecov
+    #   uses: codecov/codecov-action@v5
+    #   with:
+    #     token: ${{ secrets.CODECOV_TOKEN }}
+    #     slug: yamato3010/vrchat-world-manager
