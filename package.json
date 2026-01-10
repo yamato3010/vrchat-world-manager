@@ -2,6 +2,7 @@
   "name": "vrchat-world-manager",
   "version": "1.0.0",
   "main": "dist-electron/main.js",
+  "type": "module",
   "directories": {
     "doc": "doc"
   },
