@@ -21,11 +21,14 @@ function createWindow() {
             nodeIntegration: false,
             sandbox: false, // Added to troubleshooting preload loading
         },
+        width: 900,
+        minWidth: 900,
+        height: 600,
+        minHeight: 600,
     })
 
     if (VITE_DEV_SERVER_URL) {
         win.loadURL(VITE_DEV_SERVER_URL)
-        win.webContents.openDevTools()
     } else {
         win.loadFile(path.join(process.env.DIST!, 'index.html'))
     }
