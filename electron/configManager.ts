@@ -26,19 +26,30 @@ function getConfigPath(): string {
 export async function loadConfig(): Promise<Config> {
     const filePath = getConfigPath()
     try {
-        if (fs.existsSync(filePath)) {
-            const data = await fs.promises.readFile(filePath, 'utf-8')
-            if (!data.trim()) {
-                return DEFAULT_CONFIG
-            }
-            const config = JSON.parse(data)
-            // デフォルト値とマージ
-            return { ...DEFAULT_CONFIG, ...config }
+        // ファイルが存在しない場合はデフォルト値を返す（正常系）
+        const data = await fs.promises.readFile(filePath, 'utf-8')
+
+        if (!data.trim()) {
+            return DEFAULT_CONFIG
         }
-    } catch (error) {
+
+        try {
+            const config = JSON.parse(data)
+            return { ...DEFAULT_CONFIG, ...config }
+        } catch (parseError) {
+            console.warn('Config file is corrupted, using defaults:', parseError)
+            return DEFAULT_CONFIG
+        }
+    } catch (error: any) {
+        // ファイルが存在しない場合はデフォルト値を返す
+        if (error.code === 'ENOENT') {
+            return DEFAULT_CONFIG
+        }
+
+        // 権限エラーなどは異常系としてスローする
         console.error('Failed to load config:', error)
+        throw error
     }
-    return DEFAULT_CONFIG
 }
 
 export async function saveConfig(config: Config): Promise<void> {

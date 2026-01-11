@@ -170,8 +170,8 @@ export function registerIpcHandlers() {
             .map(tag => tag.replace('author_tag_', ''))
     }
 
-    // VRChat API
-    ipcMain.handle('fetch-vrchat-world', async (_, worldId: string) => {
+    // VRChat APIエラーを分類してスローする
+    const fetchWorldFromVRChatAPI = async (worldId: string) => {
         try {
             const response = await axios.get(`https://api.vrchat.cloud/api/1/worlds/${worldId}`, {
                 headers: {
@@ -183,10 +183,48 @@ export function registerIpcHandlers() {
                 data.tags = filterTags(data.tags)
             }
             return data
-        } catch (error) {
-            console.error('Error fetching VRChat world:', error)
-            throw error
+        } catch (error: any) {
+            // エラー分類
+            const customError: any = new Error()
+
+            if (error.response) {
+                // HTTPレスポンスがある場合
+                const status = error.response.status
+                if (status === 404) {
+                    // 正常なエラー: ワールドが見つからない
+                    customError.message = 'ワールドが見つかりません'
+                    customError.code = 'NOT_FOUND'
+                } else if (status === 429) {
+                    // 異常なエラー: レート制限
+                    customError.message = 'しばらく時間をおいて試してください'
+                    customError.code = 'RATE_LIMIT'
+                } else if (status >= 500) {
+                    // 異常なエラー: サーバーエラー
+                    customError.message = 'VRChatサーバーでエラーが発生しました'
+                    customError.code = 'SERVER_ERROR'
+                } else {
+                    // その他のHTTPエラー
+                    customError.message = `APIエラー (${status})`
+                    customError.code = 'API_ERROR'
+                }
+            } else if (error.request) {
+                // 異常なエラー: ネットワークエラー
+                customError.message = '通信エラーが発生しました。接続を確認してください'
+                customError.code = 'NETWORK_ERROR'
+            } else {
+                // 想定外のエラー
+                customError.message = error.message || '不明なエラーが発生しました'
+                customError.code = 'UNKNOWN_ERROR'
+            }
+
+            console.error('VRChat API error:', customError.code, customError.message, error)
+            throw customError
         }
+    }
+
+    // VRChat API
+    ipcMain.handle('fetch-vrchat-world', async (_, worldId: string) => {
+        return fetchWorldFromVRChatAPI(worldId)
     })
 
     // Photo management
@@ -211,13 +249,8 @@ export function registerIpcHandlers() {
                 if (!world) {
                     // 3. DBにない場合VRChat APIからワールド情報を取得して新規作成
                     try {
-                        const response = await axios.get(`https://api.vrchat.cloud/api/1/worlds/${extractedWorldId}`, {
-                            headers: {
-                                'User-Agent': 'VRChatWorldManager/1.0 (yamato3010)',
-                            },
-                        })
-                        const worldData = response.data
-                        const filteredTags = filterTags(worldData.tags || [])
+                        const worldData = await fetchWorldFromVRChatAPI(extractedWorldId)
+                        const filteredTags = worldData.tags || []
 
                         world = await prisma.world.create({
                             data: {
@@ -229,9 +262,9 @@ export function registerIpcHandlers() {
                                 tags: JSON.stringify(filteredTags),
                             },
                         })
-                    } catch (apiError) {
+                    } catch (apiError: any) {
                         console.error('Failed to fetch world info from VRChat API:', apiError)
-                        throw new Error(`World ID ${extractedWorldId} found in metadata but failed to fetch details from VRChat API`)
+                        throw new Error(`World ID ${extractedWorldId} found in metadata but failed to fetch details from VRChat API: ${apiError.message}`)
                     }
                 }
                 worldId = world.id
@@ -263,9 +296,19 @@ export function registerIpcHandlers() {
             }
         } catch (error: any) {
             console.error('Failed to import photo:', error)
+
+            // エラー分類
+            let errorCode = 'UNKNOWN_ERROR'
+            if (error.message === 'World ID not found in PNG metadata') {
+                errorCode = 'NO_METADATA'
+            } else if (error.message.includes('failed to fetch details from VRChat API')) {
+                errorCode = 'API_ERROR'
+            }
+
             return {
                 success: false,
                 error: error.message,
+                errorCode, // 追加: エラーコード
                 metadata: null,
                 extractedWorldId: null,
             }
@@ -329,13 +372,8 @@ export function registerIpcHandlers() {
     ipcMain.handle('accept-suggestion', async (_, { worldId, worldName, worldAuthor, worldThumbnail, groupId }: any) => {
         try {
             // VRChat APIからワールド情報を取得
-            const response = await axios.get(`https://api.vrchat.cloud/api/1/worlds/${worldId}`, {
-                headers: {
-                    'User-Agent': 'VRChatWorldManager/1.0 (yamato3010)',
-                },
-            })
-            const worldData = response.data
-            const filteredTags = filterTags(worldData.tags || [])
+            const worldData = await fetchWorldFromVRChatAPI(worldId)
+            const filteredTags = worldData.tags || []
 
             // ワールドを作成
             const world = await prisma.world.create({
