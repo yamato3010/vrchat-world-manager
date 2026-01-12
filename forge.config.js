@@ -25,7 +25,11 @@ export default {
       name: '@electron-forge/maker-wix',
       config: {
         language: 1041,
-        manufacturer: 'Yamato3010'
+        manufacturer: 'Yamato3010',
+        ui: {
+          locale: 'ja-JP',
+        },
+        icon: './assets/dummy-icon.ico'
       }
     },
     {
