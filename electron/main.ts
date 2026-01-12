@@ -1,4 +1,5 @@
 import { app, BrowserWindow } from 'electron'
+import { autoUpdater } from 'electron-updater'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -51,4 +52,53 @@ import { registerIpcHandlers } from './ipcHandlers'
 // Register IPC handlers before app is ready
 registerIpcHandlers()
 
-app.whenReady().then(createWindow)
+// Auto-updater configuration
+function initAutoUpdater() {
+    // 開発環境では自動更新を無効化
+    if (VITE_DEV_SERVER_URL) {
+        console.log('Auto-update disabled in development mode')
+        return
+    }
+
+    // 自動ダウンロードを有効化
+    autoUpdater.autoDownload = true
+    autoUpdater.autoInstallOnAppQuit = true
+
+    autoUpdater.on('checking-for-update', () => {
+        console.log('Checking for updates...')
+    })
+
+    autoUpdater.on('update-available', (info) => {
+        console.log('Update available:', info)
+    })
+
+    autoUpdater.on('update-not-available', (info) => {
+        console.log('Update not available:', info)
+    })
+
+    autoUpdater.on('error', (err) => {
+        console.error('Error in auto-updater:', err)
+    })
+
+    autoUpdater.on('download-progress', (progressObj) => {
+        console.log(`Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}%`)
+    })
+
+    autoUpdater.on('update-downloaded', (info) => {
+        console.log('Update downloaded:', info)
+        // アプリ終了時に自動的にインストールされる
+    })
+
+    // 起動時に更新をチェック
+    autoUpdater.checkForUpdatesAndNotify()
+
+    // 15分ごとに更新をチェック
+    setInterval(() => {
+        autoUpdater.checkForUpdatesAndNotify()
+    }, 15 * 60 * 1000)
+}
+
+app.whenReady().then(() => {
+    createWindow()
+    initAutoUpdater()
+})

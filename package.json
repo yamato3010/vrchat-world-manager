@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "main": "dist-electron/main.js",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yamato3010/vrchat-world-manager.git"
+  },
   "directories": {
     "doc": "doc"
   },
@@ -10,6 +14,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:watch": "vitest",
@@ -54,6 +60,7 @@
     "@prisma/client": "5.22.0",
     "axios": "^1.13.2",
     "electron-squirrel-startup": "^1.0.1",
+    "electron-updater": "^6.7.3",
     "png-metadata": "^1.0.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
