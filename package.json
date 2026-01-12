@@ -21,7 +21,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
-  "author": "",
+  "author": "Yamato3010",
   "license": "ISC",
   "description": "VRChatのワールドを便利に管理するためのアプリ",
   "devDependencies": {
