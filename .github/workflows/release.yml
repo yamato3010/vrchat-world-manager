@@ -36,6 +36,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install WiX Toolset
+        if: matrix.os == 'windows-latest'
+        run: |
+          dotnet tool install --global wix
+          wix extension add WixToolset.UI.wixext
+          wix extension add WixToolset.Util.wixext
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -79,7 +86,7 @@ jobs:
         with:
           name: windows-build
           path: |
-            out/make/**/*.exe
+            out/make/**/*.msi
           retention-days: 1
 
   upload-release-assets:
@@ -115,6 +122,6 @@ jobs:
             ./artifacts/**/*.zip
             ./artifacts/**/*.deb
             ./artifacts/**/*.rpm
-            ./artifacts/**/*.exe
+            ./artifacts/**/*.msi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

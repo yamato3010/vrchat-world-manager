@@ -22,8 +22,11 @@ export default {
   rebuildConfig: {},
   makers: [
     {
-      name: '@electron-forge/maker-squirrel',
-      config: {},
+      name: '@electron-forge/maker-wix',
+      config: {
+        language: 1041,
+        manufacturer: 'Yamato3010'
+      }
     },
     {
       name: '@electron-forge/maker-zip',
