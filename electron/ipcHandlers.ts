@@ -29,9 +29,8 @@ export const initializeDatabasePath = () => {
 
             console.log(`Copying template DB from ${templateDbPath} to ${dbPath}`)
             fs.copyFileSync(templateDbPath, dbPath)
-        } catch (error: any) {
+        } catch (error) {
             console.error('Failed to copy template database:', error)
-            dialog.showErrorBox('Initialization Error', `Failed to copy database template.\nSource: ${templateDbPath}\nDest: ${dbPath}\nError: ${error.message}`)
         }
     }
     return dbPath
