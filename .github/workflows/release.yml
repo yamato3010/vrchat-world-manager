@@ -59,7 +59,7 @@ jobs:
         run: |
           mkdir -p prisma
           # 空のDBを作成するために一時的にDATABASE_URLを設定
-          export DATABASE_URL="file:./prisma/template.db"
+          export DATABASE_URL="file:./template.db"
           npx prisma db push --skip-generate
         shell: bash
 
