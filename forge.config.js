@@ -6,7 +6,7 @@ export default {
     asar: true,
     name: 'vrchat-world-manager',
     extraResource: [
-      './prisma/template.db'
+      './prisma/initial_database'
     ]
   },
   publishers: [

@@ -20,7 +20,7 @@
     "test:ui": "vitest --ui",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "generate-template-db": "cross-env DATABASE_URL=\"file:./template.db\" prisma db push --schema ./prisma/schema.prisma --accept-data-loss",
+    "generate-template-db": "cross-env DATABASE_URL=\"file:./initial_database\" prisma db push --schema ./prisma/schema.prisma --accept-data-loss",
     "prepackage": "npm run generate-template-db"
   },
   "author": "Yamato3010",

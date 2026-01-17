@@ -20,7 +20,7 @@ export const initializeDatabasePath = () => {
 
     // 本番環境かつDBファイルが存在しない場合、テンプレートからコピーする
     if (app.isPackaged && !fs.existsSync(dbPath)) {
-        const templateDbPath = path.join(process.resourcesPath, 'prisma', 'template.db')
+        const templateDbPath = path.join(process.resourcesPath, 'prisma', 'initial_database')
         try {
             // 保存先ディレクトリがない場合は作成
             if (!fs.existsSync(userDataPath)) {
