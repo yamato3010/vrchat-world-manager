@@ -26,8 +26,9 @@ export async function scanForNewPhotos(dirPath: string, scanPeriodDays: number =
             return []
         }
 
-        // ディレクトリ内のファイルを取得
-        const files = await fs.promises.readdir(dirPath)
+        // ディレクトリ内のファイルを取得 (再帰的)
+        // @ts-ignore: recursive option is available in Node 18.17+
+        const files = await fs.promises.readdir(dirPath, { recursive: true }) as string[]
         const pngFiles = files.filter(file => file.toLowerCase().endsWith('.png'))
 
         const suggestions: WorldSuggestion[] = []

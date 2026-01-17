@@ -48,9 +48,11 @@ describe('photoScanner', () => {
 
     beforeEach(() => {
         // テストディレクトリを作成
-        if (!fs.existsSync(testPhotoDir)) {
-            fs.mkdirSync(testPhotoDir, { recursive: true })
+        // テストディレクトリを作成
+        if (fs.existsSync(testPhotoDir)) {
+            fs.rmSync(testPhotoDir, { recursive: true, force: true })
         }
+        fs.mkdirSync(testPhotoDir, { recursive: true })
 
         vi.clearAllMocks()
     })
@@ -58,11 +60,7 @@ describe('photoScanner', () => {
     afterEach(() => {
         // クリーンアップ
         if (fs.existsSync(testPhotoDir)) {
-            const files = fs.readdirSync(testPhotoDir)
-            files.forEach((file) => {
-                fs.unlinkSync(path.join(testPhotoDir, file))
-            })
-            fs.rmdirSync(testPhotoDir)
+            fs.rmSync(testPhotoDir, { recursive: true, force: true })
         }
     })
 
@@ -147,6 +145,37 @@ describe('photoScanner', () => {
 
             // 期間外なのでスキャンされない
             expect(result).toBeDefined()
+        })
+        it('サブディレクトリ内のPNG画像もスキャンされる (SCAN-005)', async () => {
+            const subDir = path.join(testPhotoDir, 'subdir')
+            fs.mkdirSync(subDir)
+
+            const fileName = 'valid-vrchat-sub.png'
+
+            const filePath = path.join(subDir, fileName)
+            const pngBuffer = Buffer.from([
+                0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+            ])
+            fs.writeFileSync(filePath, pngBuffer)
+
+            const now = Date.now()
+            fs.utimesSync(filePath, now / 1000, now / 1000)
+
+                // Axiosのモック設定
+                ; (axios.get as any).mockResolvedValue({
+                    data: {
+                        name: 'Subdir World',
+                        authorName: 'Subdir Author',
+                        imageUrl: 'http://example.com/sub.png'
+                    }
+                })
+
+            const result = await scanForNewPhotos(testPhotoDir, 14, [])
+
+            expect(result).toBeDefined()
+            expect(result.length).toBeGreaterThan(0)
+            const found = result.find(r => r.photoFilePath === filePath)
+            expect(found).toBeDefined()
         })
     })
 })
