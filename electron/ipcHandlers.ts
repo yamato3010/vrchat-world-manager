@@ -403,7 +403,7 @@ export function registerIpcHandlers() {
         if (!config.photoDirectoryPath) {
             return []
         }
-        return scanForNewPhotos(config.photoDirectoryPath, config.scanPeriodDays || 14, config.dismissedWorldIds || [])
+        return scanForNewPhotos(prisma, config.photoDirectoryPath, config.scanPeriodDays || 14, config.dismissedWorldIds || [])
     })
 
     ipcMain.handle('accept-suggestion', async (_, { worldId, worldName, worldAuthor, worldThumbnail, groupId }: any) => {

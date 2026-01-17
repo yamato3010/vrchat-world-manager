@@ -4,7 +4,7 @@ import { parsePNGMetadata } from './utils/pngMetadata'
 import { PrismaClient } from '@prisma/client'
 import axios from 'axios'
 
-const prisma = new PrismaClient()
+// const prisma = new PrismaClient()
 
 export interface WorldSuggestion {
     id: string // 一意の提案ID（ファイルパスのハッシュなど）
@@ -19,21 +19,24 @@ export interface WorldSuggestion {
 
 
 
-export async function scanForNewPhotos(dirPath: string, scanPeriodDays: number = 14, dismissedWorldIds: string[] = []): Promise<WorldSuggestion[]> {
+export async function scanForNewPhotos(prisma: PrismaClient, dirPath: string, scanPeriodDays: number = 14, dismissedWorldIds: string[] = []): Promise<WorldSuggestion[]> {
     try {
         if (!dirPath || !fs.existsSync(dirPath)) {
             console.log('Photo directory not found or not set:', dirPath)
             return []
         }
 
-        // ディレクトリ内のファイルを取得
-        const files = await fs.promises.readdir(dirPath)
+        // ディレクトリ内のファイルを取得 (再帰的)
+        // @ts-ignore: recursive option is available in Node 18.17+
+        const files = await fs.promises.readdir(dirPath, { recursive: true }) as string[]
         const pngFiles = files.filter(file => file.toLowerCase().endsWith('.png'))
 
-        const suggestions: WorldSuggestion[] = []
+        const candidates: { worldId: string, filePath: string, fileName: string }[] = []
         const now = Date.now()
         const scanPeriodMs = scanPeriodDays * 24 * 60 * 60 * 1000
+        const processedWorldIds = new Set<string>()
 
+        // 1. 候補となるワールドを収集
         for (const file of pngFiles) {
             const filePath = path.join(dirPath, file)
 
@@ -54,7 +57,12 @@ export async function scanForNewPhotos(dirPath: string, scanPeriodDays: number =
                     continue
                 }
 
-                // 既存ワールドと重複チェック
+                // 重複チェック (今回のスキャン内で既に処理済みか)
+                if (processedWorldIds.has(worldId)) {
+                    continue
+                }
+
+                // 既存ワールドと重複チェック (DB)
                 const existingWorld = await prisma.world.findUnique({
                     where: { vrchatWorldId: worldId },
                 })
@@ -69,44 +77,61 @@ export async function scanForNewPhotos(dirPath: string, scanPeriodDays: number =
                     continue
                 }
 
-                // VRChat APIからワールド情報を取得
-                try {
-                    const response = await axios.get(`https://api.vrchat.cloud/api/1/worlds/${worldId}`, {
-                        headers: {
-                            'User-Agent': 'VRChatWorldManager/1.0 (yamato3010)',
-                        },
-                    })
-                    const worldData = response.data
+                // すべてのチェックを通過
+                processedWorldIds.add(worldId)
+                candidates.push({ worldId, filePath, fileName: file })
 
-                    suggestions.push({
-                        id: `${worldId}_${file}`,
-                        photoFilePath: filePath,
-                        photoFileName: file,
-                        worldId: worldId,
-                        worldName: worldData.name || 'Unknown World',
-                        worldAuthor: worldData.authorName,
-                        worldThumbnail: worldData.thumbnailImageUrl || worldData.imageUrl,
-                        detectedAt: new Date().toISOString(),
-                    })
-                } catch (apiError) {
-                    console.error(`Failed to fetch world info for ${worldId}:`, apiError)
-                    // API取得に失敗しても、基本情報で提案を作成
-                    suggestions.push({
-                        id: `${worldId}_${file}`,
-                        photoFilePath: filePath,
-                        photoFileName: file,
-                        worldId: worldId,
-                        worldName: 'Unknown World',
-                        detectedAt: new Date().toISOString(),
-                    })
-                }
             } catch (fileError) {
                 console.error(`Failed to process file ${file}:`, fileError)
                 continue
             }
         }
 
-        console.log(`Found ${suggestions.length} world suggestions`)
+        // 2. 候補からランダムに最大4つ選択
+        for (let i = candidates.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+        }
+
+        const selectedCandidates = candidates.slice(0, 4)
+        const suggestions: WorldSuggestion[] = []
+
+        // 3. 選択された候補の詳細情報を取得
+        for (const candidate of selectedCandidates) {
+            try {
+                // VRChat APIからワールド情報を取得
+                const response = await axios.get(`https://api.vrchat.cloud/api/1/worlds/${candidate.worldId}`, {
+                    headers: {
+                        'User-Agent': 'VRChatWorldManager/1.0 (yamato3010)',
+                    },
+                })
+                const worldData = response.data
+
+                suggestions.push({
+                    id: `${candidate.worldId}_${candidate.fileName}`,
+                    photoFilePath: candidate.filePath,
+                    photoFileName: candidate.fileName,
+                    worldId: candidate.worldId,
+                    worldName: worldData.name || 'Unknown World',
+                    worldAuthor: worldData.authorName,
+                    worldThumbnail: worldData.thumbnailImageUrl || worldData.imageUrl,
+                    detectedAt: new Date().toISOString(),
+                })
+            } catch (apiError) {
+                console.error(`Failed to fetch world info for ${candidate.worldId}:`, apiError)
+                // API取得に失敗しても、基本情報で提案を作成
+                suggestions.push({
+                    id: `${candidate.worldId}_${candidate.fileName}`,
+                    photoFilePath: candidate.filePath,
+                    photoFileName: candidate.fileName,
+                    worldId: candidate.worldId,
+                    worldName: 'Unknown World',
+                    detectedAt: new Date().toISOString(),
+                })
+            }
+        }
+
+        console.log(`Found ${candidates.length} candidates, suggesting ${suggestions.length} worlds`)
         return suggestions
     } catch (error) {
         console.error('Failed to scan for new photos:', error)

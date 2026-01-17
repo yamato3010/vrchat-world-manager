@@ -58,7 +58,7 @@ npm install
 
 # データベースをセットアップ
 npx prisma generate
-npx prisma db push
+npx cross-env DATABASE_URL="file:./dev.db" npx prisma db push
 ```
 
 ## 使い方

@@ -24,6 +24,11 @@ export function parsePNGMetadata(filePath: string): ParseResult {
     // split
     const list = png.splitChunk(s)
 
+    if (!Array.isArray(list)) {
+        // console.warn('Failed to split PNG chunks:', filePath)
+        return { metadata, worldId }
+    }
+
     /** listの中のオブジェクトは以下のようになっている
     * [{
     *     size: 447,
@@ -36,7 +41,7 @@ export function parsePNGMetadata(filePath: string): ParseResult {
 
     list.forEach((chunk) => {
         if (chunk.type === 'iTXt' || chunk.type === 'tEXt' || chunk.type === 'zTXt') {
-            const data = chunk.data.toString('binary') 
+            const data = chunk.data.toString('binary')
             // シングルクォーテーションかダブルクォーテーション、あるいはxmlタグで囲まれた wrld_ から始まる文字列を抽出
             // "wrld_..." または 'wrld_...' または >wrld_...<
             // json形式でワールドIDが格納されていた場合
