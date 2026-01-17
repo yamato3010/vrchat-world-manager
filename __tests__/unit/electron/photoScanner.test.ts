@@ -53,7 +53,6 @@ describe('photoScanner', () => {
 
     beforeEach(() => {
         // テストディレクトリを作成
-        // テストディレクトリを作成
         if (fs.existsSync(testPhotoDir)) {
             fs.rmSync(testPhotoDir, { recursive: true, force: true })
         }
@@ -217,9 +216,6 @@ describe('photoScanner', () => {
             const result = await scanForNewPhotos(mockPrisma, testPhotoDir, 14, [])
 
             expect(result.length).toBeLessThanOrEqual(4)
-
-            // 重要: ランダム性があるため、5件中4件が選ばれていることを確認
-            // (今回はモックの関係で必ずしも5件有効になるとは限らないが、ロジック上は上限チェック)
         })
     })
 })

@@ -69,8 +69,7 @@ export async function scanForNewPhotos(prisma: PrismaClient, dirPath: string, sc
 
                 if (existingWorld) {
                     // 既にDBに登録されている場合はスキップ
-                    continue // Setには追加しない（他のファイルで同じWorldIDが出たときにまたDBチェックするのを防ぐため、本来はSetに追加すべきだが、candidatesに追加しないならOK）
-                    // ↑ 訂正: 同じWorldIDの別ファイルが後で来た時、DBチェックをスキップするためにはprocessedWorldIdsに追加すべき
+                    continue
                 }
 
                 // 無視リストに含まれている場合はスキップ
@@ -89,7 +88,6 @@ export async function scanForNewPhotos(prisma: PrismaClient, dirPath: string, sc
         }
 
         // 2. 候補からランダムに最大4つ選択
-        // Fisher-Yates shuffle
         for (let i = candidates.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
