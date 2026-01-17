@@ -94,6 +94,18 @@ npm run build
 - **Tailwind CSS**: スタイリング
 - **VRChat API**: ワールド情報の取得
 
+## ローカル環境でのビルド
+
+ローカルでビルドを作成する場合：
+
+```bash
+# パッケージのみ作成
+npm run package
+
+# インストーラーを含むすべてを作成
+npm run make
+```
+
 ## ライセンス
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

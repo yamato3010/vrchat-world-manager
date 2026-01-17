@@ -1,0 +1,135 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # 手動実行を許可
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          release-type: node
+          package-name: vrchat-world-manager
+
+  build:
+    needs: release-please
+    # リリース作成時 または 手動実行時にビルドを実行
+    if: ${{ needs.release-please.outputs.release_created || github.event_name == 'workflow_dispatch' }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install WiX Toolset
+        if: matrix.os == 'windows-latest'
+        run: |
+          dotnet tool install --global wix
+          wix extension add WixToolset.UI.wixext
+          wix extension add WixToolset.Util.wixext
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Create Database Template
+        run: |
+          mkdir -p prisma
+          # 空のDBを作成するために一時的にDATABASE_URLを設定
+          export DATABASE_URL="file:./template.db"
+          npx prisma db push --skip-generate
+        shell: bash
+
+      - name: Build application
+        run: npm run build
+
+      - name: Build Electron app
+        run: npm run make
+
+      - name: Upload artifacts (macOS)
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: |
+            out/make/**/*.zip
+          retention-days: 1
+
+      - name: Upload artifacts (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: |
+            out/make/**/*.deb
+            out/make/**/*.rpm
+          retention-days: 1
+
+      - name: Upload artifacts (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            out/make/**/*.msi
+          retention-days: 1
+
+  upload-release-assets:
+    needs: [release-please, build]
+    # リリース作成時のみアセットをアップロード（手動実行時はスキップ）
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build
+          path: ./artifacts/macos
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build
+          path: ./artifacts/linux
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+          path: ./artifacts/windows
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          files: |
+            ./artifacts/**/*.zip
+            ./artifacts/**/*.deb
+            ./artifacts/**/*.rpm
+            ./artifacts/**/*.msi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

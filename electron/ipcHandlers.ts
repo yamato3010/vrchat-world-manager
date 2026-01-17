@@ -1,4 +1,4 @@
-import { ipcMain, shell, dialog, BrowserWindow } from 'electron'
+import { ipcMain, shell, dialog, BrowserWindow, app } from 'electron'
 import { PrismaClient } from '@prisma/client'
 import axios from 'axios'
 import { parsePNGMetadata } from './utils/pngMetadata'
@@ -7,7 +7,44 @@ import * as fs from 'fs'
 import { loadConfig, saveConfig } from './configManager'
 import { scanForNewPhotos } from './photoScanner'
 
-const prisma = new PrismaClient()
+export const initializeDatabasePath = () => {
+    // データベースファイルのパスを設定
+    // 本番環境: ユーザーデータディレクトリ/database.db
+    // 開発環境: プロジェクトルート/dev.db
+    const userDataPath = app.getPath('userData')
+    const dbPath = app.isPackaged
+        ? path.join(userDataPath, 'database.db')
+        : path.join(process.cwd(), 'dev.db')
+
+    console.log('Database path:', dbPath)
+
+    // 本番環境かつDBファイルが存在しない場合、テンプレートからコピーする
+    if (app.isPackaged && !fs.existsSync(dbPath)) {
+        const templateDbPath = path.join(process.resourcesPath, 'initial_database')
+        try {
+            // 保存先ディレクトリがない場合は作成
+            if (!fs.existsSync(userDataPath)) {
+                fs.mkdirSync(userDataPath, { recursive: true })
+            }
+
+            console.log(`Copying template DB from ${templateDbPath} to ${dbPath}`)
+            fs.copyFileSync(templateDbPath, dbPath)
+        } catch (error) {
+            console.error('Failed to copy template database:', error)
+        }
+    }
+    return dbPath
+}
+
+const dbPath = initializeDatabasePath()
+
+const prisma = new PrismaClient({
+    datasources: {
+        db: {
+            url: `file:${dbPath}`,
+        },
+    },
+})
 
 export function registerIpcHandlers() {
     // World CRUD

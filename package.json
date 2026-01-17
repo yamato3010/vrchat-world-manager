@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "main": "dist-electron/main.js",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yamato3010/vrchat-world-manager.git"
+  },
   "directories": {
     "doc": "doc"
   },
@@ -10,19 +14,24 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "generate-template-db": "cross-env DATABASE_URL=\"file:./initial_database\" prisma db push --schema ./prisma/schema.prisma --accept-data-loss",
+    "prepackage": "npm run generate-template-db",
+    "premake": "npm run generate-template-db"
   },
-  "author": "",
+  "author": "Yamato3010",
   "license": "ISC",
-  "description": "",
+  "description": "A world manager tool for VRChat",
   "devDependencies": {
     "@electron-forge/cli": "^7.10.2",
     "@electron-forge/maker-deb": "^7.10.2",
     "@electron-forge/maker-rpm": "^7.10.2",
-    "@electron-forge/maker-squirrel": "^7.10.2",
+    "@electron-forge/maker-wix": "^7.10.2",
     "@electron-forge/maker-zip": "^7.10.2",
     "@electron-forge/plugin-auto-unpack-natives": "^7.10.2",
     "@electron-forge/plugin-fuses": "^7.10.2",
@@ -40,6 +49,7 @@
     "@vitest/coverage-v8": "^4.0.15",
     "@vitest/ui": "^4.0.15",
     "autoprefixer": "^10.4.22",
+    "cross-env": "^10.1.0",
     "electron": "^39.2.3",
     "jsdom": "^27.2.0",
     "postcss": "^8.5.6",
@@ -53,7 +63,7 @@
   "dependencies": {
     "@prisma/client": "5.22.0",
     "axios": "^1.13.2",
-    "electron-squirrel-startup": "^1.0.1",
+    "electron-updater": "^6.7.3",
     "png-metadata": "^1.0.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

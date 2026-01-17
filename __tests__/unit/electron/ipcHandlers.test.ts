@@ -13,6 +13,10 @@ vi.mock('electron', () => ({
     ipcMain: {
         handle: vi.fn(),
     },
+    app: {
+        getPath: vi.fn().mockReturnValue('/mock/userData'),
+        get isPackaged() { return false },
+    },
     shell: {
         openExternal: vi.fn(),
     },
@@ -94,15 +98,15 @@ describe('ipcHandlers', () => {
     beforeEach(() => {
         vi.clearAllMocks()
 
-            // Capture handlers
+            // IPCHandlersをキャプチャ
             ; (ipcMain.handle as Mock).mockImplementation((channel, listener) => {
                 handlers[channel] = listener
             })
 
-        // Initialize handlers
+        // IPCHandlersを登録
         registerIpcHandlers()
 
-        // Get prisma instance
+        // Prismaインスタンスを取得
         prisma = new PrismaClient()
 
             // Default Config Mock
@@ -269,8 +273,6 @@ describe('ipcHandlers', () => {
         it('import-photo: worldIdが指定された場合それを使用する (PHOTO-003)', async () => {
             const result = await invoke('import-photo', '/p.png', 999)
             expect(result.success).toBe(true)
-            // Should fetch world 999 from DB or API. 
-            // Mock DB finding it to be simple.
             expect(prisma.world.findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 999 } }))
         })
 
@@ -314,7 +316,6 @@ describe('ipcHandlers', () => {
             prisma.worldOnGroup.findMany.mockResolvedValue([])
             await invoke('delete-group', { id: 1, deleteWorlds: true })
             expect(prisma.group.delete).toHaveBeenCalled()
-            // prisma.world.deleteMany should NOT be called if logic checks length > 0
             expect(prisma.world.deleteMany).not.toHaveBeenCalled()
         })
 
@@ -348,7 +349,7 @@ describe('ipcHandlers', () => {
         it('dismiss-suggestion: 既に無視リストにある場合は追加しない (SUGG-022)', async () => {
             (loadConfig as Mock).mockResolvedValue({ dismissedWorldIds: ['w1'] })
             await invoke('dismiss-suggestion', 'w1')
-            // Should not save since already there
+            // すでに存在するため保存しない
             expect(saveConfig).not.toHaveBeenCalled()
         })
 

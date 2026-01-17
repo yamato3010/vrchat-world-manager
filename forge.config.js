@@ -1,15 +1,39 @@
-const { FusesPlugin } = require('@electron-forge/plugin-fuses');
-const { FuseV1Options, FuseVersion } = require('@electron/fuses');
+import { FusesPlugin } from '@electron-forge/plugin-fuses';
+import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
-module.exports = {
+export default {
   packagerConfig: {
     asar: true,
+    name: 'vrchat-world-manager',
+    extraResource: [
+      './prisma/initial_database'
+    ]
   },
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      config: {
+        repository: {
+          owner: 'yamato3010',
+          name: 'vrchat-world-manager'
+        },
+        prerelease: false,
+        draft: true
+      }
+    }
+  ],
   rebuildConfig: {},
   makers: [
     {
-      name: '@electron-forge/maker-squirrel',
-      config: {},
+      name: '@electron-forge/maker-wix',
+      config: {
+        language: 1041,
+        manufacturer: 'Yamato3010',
+        ui: {
+          locale: 'ja-JP',
+        },
+        icon: './assets/dummy-icon.ico'
+      }
     },
     {
       name: '@electron-forge/maker-zip',
