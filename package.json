@@ -21,7 +21,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "generate-template-db": "cross-env DATABASE_URL=\"file:./initial_database\" prisma db push --schema ./prisma/schema.prisma --accept-data-loss",
-    "prepackage": "npm run generate-template-db"
+    "prepackage": "npm run generate-template-db",
+    "premake": "npm run generate-template-db"
   },
   "author": "Yamato3010",
   "license": "ISC",
