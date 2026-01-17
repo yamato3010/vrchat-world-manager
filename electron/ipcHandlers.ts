@@ -20,7 +20,7 @@ export const initializeDatabasePath = () => {
 
     // 本番環境かつDBファイルが存在しない場合、テンプレートからコピーする
     if (app.isPackaged && !fs.existsSync(dbPath)) {
-        const templateDbPath = path.join(process.resourcesPath, 'prisma', 'initial_database')
+        const templateDbPath = path.join(process.resourcesPath, 'initial_database')
         try {
             // 保存先ディレクトリがない場合は作成
             if (!fs.existsSync(userDataPath)) {
@@ -29,8 +29,9 @@ export const initializeDatabasePath = () => {
 
             console.log(`Copying template DB from ${templateDbPath} to ${dbPath}`)
             fs.copyFileSync(templateDbPath, dbPath)
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to copy template database:', error)
+            dialog.showErrorBox('Initialization Error', `Failed to copy database template.\nSource: ${templateDbPath}\nDest: ${dbPath}\nError: ${error.message}`)
         }
     }
     return dbPath
