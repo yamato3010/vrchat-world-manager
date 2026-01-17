@@ -400,7 +400,7 @@ describe('ipcHandlers', () => {
                 ; (scanForNewPhotos as Mock).mockResolvedValue([])
 
             await invoke('get-world-suggestions')
-            expect(scanForNewPhotos).toHaveBeenCalledWith('/path', 30, ['d1'])
+            expect(scanForNewPhotos).toHaveBeenCalledWith(prisma, '/path', 30, ['d1'])
         })
     })
 

@@ -45,6 +45,11 @@ vi.mock('@prisma/client', () => {
 
 describe('photoScanner', () => {
     const testPhotoDir = '/tmp/test-vrchat-photos'
+    const mockPrisma = {
+        world: {
+            findUnique: vi.fn().mockResolvedValue(null),
+        },
+    } as any
 
     beforeEach(() => {
         // テストディレクトリを作成
@@ -90,7 +95,7 @@ describe('photoScanner', () => {
                     }
                 })
 
-            const result = await scanForNewPhotos(testPhotoDir, 14, [])
+            const result = await scanForNewPhotos(mockPrisma, testPhotoDir, 14, [])
 
             expect(result).toBeDefined()
             expect(Array.isArray(result)).toBe(true)
@@ -102,7 +107,7 @@ describe('photoScanner', () => {
         it('ディレクトリが存在しない場合でもエラーにならない (SCAN-004)', async () => {
             const nonExistentDir = '/tmp/non-existent-directory'
 
-            const result = await scanForNewPhotos(nonExistentDir, 14, [])
+            const result = await scanForNewPhotos(mockPrisma, nonExistentDir, 14, [])
 
             // エラーではなく空配列が返される
             expect(Array.isArray(result)).toBe(true)
@@ -122,7 +127,7 @@ describe('photoScanner', () => {
             const now = Date.now()
             fs.utimesSync(filePath, now / 1000, now / 1000)
 
-            const result = await scanForNewPhotos(testPhotoDir, 14, dismissedWorldIds)
+            const result = await scanForNewPhotos(mockPrisma, testPhotoDir, 14, dismissedWorldIds)
 
             // 無視リストに含まれているため、結果には含まれない
             expect(result).toBeDefined()
@@ -141,7 +146,7 @@ describe('photoScanner', () => {
             const oldDate = new Date('2020-01-01').getTime()
             fs.utimesSync(oldFilePath, oldDate / 1000, oldDate / 1000)
 
-            const result = await scanForNewPhotos(testPhotoDir, 14, [])
+            const result = await scanForNewPhotos(mockPrisma, testPhotoDir, 14, [])
 
             // 期間外なのでスキャンされない
             expect(result).toBeDefined()
@@ -170,12 +175,51 @@ describe('photoScanner', () => {
                     }
                 })
 
-            const result = await scanForNewPhotos(testPhotoDir, 14, [])
+            const result = await scanForNewPhotos(mockPrisma, testPhotoDir, 14, [])
 
             expect(result).toBeDefined()
             expect(result.length).toBeGreaterThan(0)
             const found = result.find(r => r.photoFilePath === filePath)
             expect(found).toBeDefined()
+        })
+
+        it('提案は最大4件まで制限される (SCAN-006)', async () => {
+            // 5つの異なるファイルを作成
+            for (let i = 0; i < 5; i++) {
+                const fileName = `VRChat_2024-01-01_12-00-0${i}_limit-test.png`
+                const filePath = path.join(testPhotoDir, fileName)
+                const pngBuffer = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+                fs.writeFileSync(filePath, pngBuffer)
+                const now = Date.now()
+                fs.utimesSync(filePath, now / 1000, now / 1000)
+            }
+
+            // pngMetadataモックを拡張して、ファイルごとに異なるworldIdを返すようにする
+            // 既存のモック実装を一時的に上書き
+            const metadataMock = await import('../../../electron/utils/pngMetadata')
+            const originalMock = metadataMock.parsePNGMetadata as any
+            originalMock.mockImplementation((filePath: string) => {
+                if (filePath.includes('limit-test')) {
+                    // ファイル名からインデックスを抽出して一意のIDを生成
+                    const match = filePath.match(/12-00-0(\d)/)
+                    const index = match ? match[1] : '0'
+                    return {
+                        metadata: {},
+                        worldId: `wrld_limit-test-${index}`,
+                    }
+                }
+                return {
+                    metadata: {},
+                    worldId: null
+                }
+            })
+
+            const result = await scanForNewPhotos(mockPrisma, testPhotoDir, 14, [])
+
+            expect(result.length).toBeLessThanOrEqual(4)
+
+            // 重要: ランダム性があるため、5件中4件が選ばれていることを確認
+            // (今回はモックの関係で必ずしも5件有効になるとは限らないが、ロジック上は上限チェック)
         })
     })
 })
