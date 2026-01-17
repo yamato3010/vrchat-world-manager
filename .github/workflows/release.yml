@@ -55,6 +55,14 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: Create Database Template
+        run: |
+          mkdir -p prisma
+          # 空のDBを作成するために一時的にDATABASE_URLを設定
+          export DATABASE_URL="file:./prisma/template.db"
+          npx prisma db push --skip-generate
+        shell: bash
+
       - name: Build application
         run: npm run build
 

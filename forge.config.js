@@ -5,6 +5,9 @@ export default {
   packagerConfig: {
     asar: true,
     name: 'vrchat-world-manager',
+    extraResource: [
+      './prisma/template.db'
+    ]
   },
   publishers: [
     {
