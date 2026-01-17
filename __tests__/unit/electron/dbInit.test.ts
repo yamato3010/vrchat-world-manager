@@ -88,6 +88,7 @@ describe('Database Initialization', () => {
         vi.mocked(fs.existsSync).mockImplementation((p) => {
             const pStr = p.toString()
             if (pStr.endsWith('database.db')) return false
+            if (pStr.endsWith('initial_database')) return true // テンプレートファイルの存在確認
             if (pStr.endsWith('userData')) return true
             return false
         })
@@ -96,7 +97,7 @@ describe('Database Initialization', () => {
 
         expect(result).toBe(path.join('/userData', 'database.db'))
         expect(fs.copyFileSync).toHaveBeenCalledWith(
-            path.join('/resources', 'prisma', 'template.db'),
+            path.join('/resources', 'initial_database'),
             path.join('/userData', 'database.db')
         )
     })
