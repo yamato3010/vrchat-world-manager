@@ -22,8 +22,8 @@ function createWindow() {
             nodeIntegration: false,
             sandbox: false, // Added to troubleshooting preload loading
         },
-        width: 900,
-        minWidth: 900,
+        width: 1100,
+        minWidth: 1100,
         height: 600,
         minHeight: 600,
     })
