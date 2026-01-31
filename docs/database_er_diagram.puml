@@ -1,0 +1,53 @@
+@startuml VRChat World Manager ER図
+
+entity "World" as world {
+  * id : Int <<PK>>
+  --
+  * vrchatWorldId : String <<UK>>
+  * name : String
+  description : String?
+  authorName : String?
+  thumbnailUrl : String?
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+entity "Photo" as photo {
+  * id : Int <<PK>>
+  --
+  * filePath : String
+  takenAt : DateTime?
+  * worldId : Int <<FK>>
+}
+
+entity "Group" as group {
+  * id : Int <<PK>>
+  --
+  * name : String
+  description : String?
+  icon : String?
+  createdAt : DateTime
+}
+
+entity "WorldOnGroup" as worldongroup {
+  * worldId : Int <<PK,FK>>
+  * groupId : Int <<PK,FK>>
+  --
+  assignedAt : DateTime
+}
+
+' リレーション定義
+world ||--o{ photo : "1対多"
+world ||--o{ worldongroup : "1対多"
+group ||--o{ worldongroup : "1対多"
+
+' 凡例
+legend right
+  PK : Primary Key
+  FK : Foreign Key
+  UK : Unique Key
+  * : NOT NULL
+  ? : Nullable
+endlegend
+
+@enduml
