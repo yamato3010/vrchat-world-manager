@@ -86,13 +86,13 @@ npm run build
 
 ## 技術スタック
 
-- **Electron**: デスクトップアプリケーションフレームワーク
-- **React**: UIライブラリ
-- **TypeScript**: 型安全な開発
-- **Vite**: ビルドツール
-- **Prisma**: データベースORM (SQLite)
-- **Tailwind CSS**: スタイリング
-- **VRChat API**: ワールド情報の取得
+- **Electron**
+- **React**
+- **TypeScript**
+- **Vite**
+- **Prisma**
+- **Tailwind CSS**
+- **VRChat API**
 
 ## ローカル環境でのビルド
 
