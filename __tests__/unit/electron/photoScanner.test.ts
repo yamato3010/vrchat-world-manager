@@ -217,5 +217,190 @@ describe('photoScanner', () => {
 
             expect(result.length).toBeLessThanOrEqual(4)
         })
+
+        it('worldIdがnullの写真はスキップされる (SCAN-007)', async () => {
+            const fileName = 'no-metadata.png'
+            const filePath = path.join(testPhotoDir, fileName)
+            const pngBuffer = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+            fs.writeFileSync(filePath, pngBuffer)
+
+            const now = Date.now()
+            fs.utimesSync(filePath, now / 1000, now / 1000)
+
+            // モックを上書きしてworldIdがnullを返すようにする
+            const metadataMock = await import('../../../electron/utils/pngMetadata')
+            const originalMock = metadataMock.parsePNGMetadata as any
+            originalMock.mockImplementation(() => {
+                return {
+                    metadata: {},
+                    worldId: null  // worldIdなし
+                }
+            })
+
+            const result = await scanForNewPhotos(mockPrisma, testPhotoDir, 14, [])
+
+            // worldIdがnullなのでスキップされる
+            expect(result.length).toBe(0)
+        })
+
+        it('重複するworldIdは1つだけ提案される (SCAN-008)', async () => {
+            // 同じworldIdを持つ3つのファイルを作成
+            for (let i = 0; i < 3; i++) {
+                const fileName = `duplicate-${i}.png`
+                const filePath = path.join(testPhotoDir, fileName)
+                const pngBuffer = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+                fs.writeFileSync(filePath, pngBuffer)
+                const now = Date.now()
+                fs.utimesSync(filePath, now / 1000, now / 1000)
+            }
+
+            // モックを上書きして全て同じworldIdを返すようにする
+            const metadataMock = await import('../../../electron/utils/pngMetadata')
+            const originalMock = metadataMock.parsePNGMetadata as any
+            originalMock.mockImplementation(() => {
+                return {
+                    metadata: {},
+                    worldId: 'wrld_duplicate-world-id'
+                }
+            });
+
+            (axios.get as any).mockResolvedValue({
+                data: {
+                    name: 'Duplicate World',
+                    authorName: 'Test Author',
+                    imageUrl: 'http://example.com/image.png'
+                }
+            })
+
+            const result = await scanForNewPhotos(mockPrisma, testPhotoDir, 14, [])
+
+            // 重複は除外されるので1件のみ
+            expect(result.length).toBe(1)
+            expect(result[0].worldId).toBe('wrld_duplicate-world-id')
+        })
+
+        it('DBに既に登録されているワールドはスキップされる (SCAN-009)', async () => {
+            const fileName = 'existing-world.png'
+            const filePath = path.join(testPhotoDir, fileName)
+            const pngBuffer = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+            fs.writeFileSync(filePath, pngBuffer)
+            const now = Date.now()
+            fs.utimesSync(filePath, now / 1000, now / 1000)
+
+            // モックを上書き
+            const metadataMock = await import('../../../electron/utils/pngMetadata')
+            const originalMock = metadataMock.parsePNGMetadata as any
+            originalMock.mockImplementation(() => {
+                return {
+                    metadata: {},
+                    worldId: 'wrld_existing-in-db'
+                }
+            })
+
+            // prismaのモックを変更して、ワールドが既に存在することを示す
+            const mockPrismaWithExisting = {
+                world: {
+                    findUnique: vi.fn().mockResolvedValue({
+                        id: 1,
+                        vrchatWorldId: 'wrld_existing-in-db',
+                        name: 'Existing World'
+                    })
+                }
+            } as any
+
+            const result = await scanForNewPhotos(mockPrismaWithExisting, testPhotoDir, 14, [])
+
+            // DBに既に存在するのでスキップされる
+            expect(result.length).toBe(0)
+        })
+
+        it('API取得失敗時は基本情報で提案を作成する (SCAN-010)', async () => {
+            const fileName = 'api-fail.png'
+            const filePath = path.join(testPhotoDir, fileName)
+            const pngBuffer = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+            fs.writeFileSync(filePath, pngBuffer)
+            const now = Date.now()
+            fs.utimesSync(filePath, now / 1000, now / 1000)
+
+            // モックを上書き
+            const metadataMock = await import('../../../electron/utils/pngMetadata')
+            const originalMock = metadataMock.parsePNGMetadata as any
+            originalMock.mockImplementation(() => {
+                return {
+                    metadata: {},
+                    worldId: 'wrld_api-fail-test'
+                }
+            })
+
+                // axiosのモックをAPI失敗にする
+                ; (axios.get as any).mockRejectedValue(new Error('API Error'))
+
+            const result = await scanForNewPhotos(mockPrisma, testPhotoDir, 14, [])
+
+            // API失敗でも提案は作成される
+            expect(result.length).toBe(1)
+            expect(result[0].worldId).toBe('wrld_api-fail-test')
+            expect(result[0].worldName).toBe('Unknown World')
+            // API失敗時はauthorやthumbnailは設定されない
+            expect(result[0].worldAuthor).toBeUndefined()
+            expect(result[0].worldThumbnail).toBeUndefined()
+        })
+
+        it('ファイル処理エラー時はそのファイルをスキップして続行する (SCAN-011)', async () => {
+            // 正常なファイルを作成
+            const validFileName = 'valid-file.png'
+            const validFilePath = path.join(testPhotoDir, validFileName)
+            const pngBuffer = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+            fs.writeFileSync(validFilePath, pngBuffer)
+            const now = Date.now()
+            fs.utimesSync(validFilePath, now / 1000, now / 1000)
+
+            // エラーを起こすファイル名を作成（実際のファイルは作らない）
+            const errorFileName = 'error-file.png'
+
+            // モックを上書きして、error-fileの時だけエラーをスローする
+            const metadataMock = await import('../../../electron/utils/pngMetadata')
+            const originalMock = metadataMock.parsePNGMetadata as any
+            originalMock.mockImplementation((filePath: string) => {
+                if (filePath.includes('error-file')) {
+                    throw new Error('Parse Error')
+                }
+                return {
+                    metadata: {},
+                    worldId: 'wrld_valid-file'
+                }
+            })
+
+            // fs.promises.readdirをモックして、両方のファイルを返す
+            const originalReaddir = fs.promises.readdir
+            vi.spyOn(fs.promises, 'readdir').mockResolvedValue([validFileName, errorFileName] as any)
+
+            // fs.promises.statをモックして、error-fileの時はエラーを投げる
+            const originalStat = fs.promises.stat
+            vi.spyOn(fs.promises, 'stat').mockImplementation(async (filePath: any) => {
+                if (filePath.includes('error-file')) {
+                    throw new Error('File stat error')
+                }
+                return originalStat(filePath)
+            });
+
+            (axios.get as any).mockResolvedValue({
+                data: {
+                    name: 'Valid World',
+                    authorName: 'Test Author',
+                    imageUrl: 'http://example.com/image.png'
+                }
+            })
+
+            const result = await scanForNewPhotos(mockPrisma, testPhotoDir, 14, [])
+
+            // エラーファイルはスキップされ、正常なファイルだけ処理される
+            expect(result.length).toBe(1)
+            expect(result[0].worldId).toBe('wrld_valid-file')
+
+            // モックをリストア
+            vi.spyOn(fs.promises, 'readdir').mockRestore()
+            vi.spyOn(fs.promises, 'stat').mockRestore()
+        })
     })
 })
