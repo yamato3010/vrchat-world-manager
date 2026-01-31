@@ -128,8 +128,10 @@ describe('photoScanner', () => {
 
             const result = await scanForNewPhotos(mockPrisma, testPhotoDir, 14, dismissedWorldIds)
 
-            // 無視リストに含まれているため、結果には含まれない
+            // 無視リストに含まれているため、空配列が返される
             expect(result).toBeDefined()
+            expect(Array.isArray(result)).toBe(true)
+            expect(result.length).toBe(0)
         })
 
         it('指定期間外の写真はスキャンしない (SCAN-002)', async () => {
@@ -147,8 +149,10 @@ describe('photoScanner', () => {
 
             const result = await scanForNewPhotos(mockPrisma, testPhotoDir, 14, [])
 
-            // 期間外なのでスキャンされない
+            // 期間外なのでスキャンされない（空配列が返される）
             expect(result).toBeDefined()
+            expect(Array.isArray(result)).toBe(true)
+            expect(result.length).toBe(0)
         })
         it('サブディレクトリ内のPNG画像もスキャンされる (SCAN-005)', async () => {
             const subDir = path.join(testPhotoDir, 'subdir')
