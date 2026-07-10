@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.0](https://github.com/yamato3010/vrchat-world-manager/compare/v1.0.0...v1.1.0) (2026-07-10)
+
+
+### Features
+
+* ✨ photoScannerを再起的にスキャンするように ([2b76f9e](https://github.com/yamato3010/vrchat-world-manager/commit/2b76f9edcd5a2f277e3b0502cf542ed555d727ed))
+* ✨ おすすめを5つに制限し、ランダムに選ばれるように ([1c5e0fb](https://github.com/yamato3010/vrchat-world-manager/commit/1c5e0fb41a295b835ae2992bc9439b1cc7eac6e6))
+* ✨ 画面の最小サイズを変更 ([ac990d4](https://github.com/yamato3010/vrchat-world-manager/commit/ac990d45935bb34b0a182772591134c3c2f3fd63))
+
 ## 1.0.0 (2026-01-17)
 
 
