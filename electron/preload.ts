@@ -37,6 +37,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getWorldSuggestions: () => ipcRenderer.invoke('get-world-suggestions'),
     acceptSuggestion: (suggestion: any) => ipcRenderer.invoke('accept-suggestion', suggestion),
     dismissSuggestion: (worldId: string) => ipcRenderer.invoke('dismiss-suggestion', worldId),
+
+    // App update check
+    checkForUpdate: () => ipcRenderer.invoke('check-for-update'),
 })
 
 console.log('Preload script loaded');
