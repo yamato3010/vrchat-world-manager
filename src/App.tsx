@@ -7,7 +7,8 @@ import { AddPhotoModal } from './components/AddPhotoModal'
 import { WorldDetail } from './pages/WorldDetail'
 import { Layout } from './components/Layout'
 import { PhotoDirectorySetupModal } from './components/PhotoDirectorySetupModal'
-import { Group, WorldSuggestion, Config } from './types'
+import { UpdateNotificationBanner } from './components/UpdateNotificationBanner'
+import { Group, WorldSuggestion, Config, UpdateCheckResult } from './types'
 import './index.css'
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
     const [startInEditMode, setStartInEditMode] = useState(false)
     const [suggestions, setSuggestions] = useState<WorldSuggestion[]>([])
     const [config, setConfig] = useState<Config>({})
+    const [updateInfo, setUpdateInfo] = useState<UpdateCheckResult | null>(null)
 
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
     const [searchQuery, setSearchQuery] = useState('')
@@ -53,6 +55,21 @@ function App() {
             }
         }
         loadConfigAndScan()
+    }, [])
+
+    // 起動時にアップデートを確認
+    useEffect(() => {
+        const checkUpdate = async () => {
+            try {
+                const result = await window.electronAPI.checkForUpdate()
+                if (result.available) {
+                    setUpdateInfo(result)
+                }
+            } catch (error) {
+                console.error('Failed to check for updates:', error)
+            }
+        }
+        checkUpdate()
     }, [])
 
     const handleWorldAdded = () => {
@@ -168,6 +185,14 @@ function App() {
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
         >
+            {updateInfo?.available && updateInfo.latestVersion && updateInfo.releaseUrl && (
+                <UpdateNotificationBanner
+                    latestVersion={updateInfo.latestVersion}
+                    releaseUrl={updateInfo.releaseUrl}
+                    onDismiss={() => setUpdateInfo(null)}
+                />
+            )}
+
             {selectedWorldId ? (
                 <WorldDetail worldId={selectedWorldId} onBack={handleBackToList} startInEditMode={startInEditMode} />
             ) : (
