@@ -67,6 +67,12 @@ export interface CreateGroupData {
     icon?: string
 }
 
+export interface UpdateCheckResult {
+    available: boolean
+    latestVersion?: string
+    releaseUrl?: string
+}
+
 export interface ElectronAPI {
     getWorlds: (groupId?: number) => Promise<World[]>
     createWorld: (data: CreateWorldData) => Promise<World>
@@ -110,6 +116,9 @@ export interface ElectronAPI {
     getWorldSuggestions: () => Promise<WorldSuggestion[]>
     acceptSuggestion: (suggestion: { worldId: string; worldName?: string; worldAuthor?: string; worldThumbnail?: string; groupId?: number }) => Promise<World>
     dismissSuggestion: (worldId: string) => Promise<{ success: boolean }>
+
+    // App update check
+    checkForUpdate: () => Promise<UpdateCheckResult>
 }
 
 declare global {

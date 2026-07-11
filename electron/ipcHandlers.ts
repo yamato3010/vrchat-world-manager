@@ -6,6 +6,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { loadConfig, saveConfig } from './configManager'
 import { scanForNewPhotos } from './photoScanner'
+import { checkForAppUpdate } from './updateChecker'
 
 export const initializeDatabasePath = () => {
     // データベースファイルのパスを設定
@@ -461,5 +462,10 @@ export function registerIpcHandlers() {
 
     ipcMain.handle('open-external-link', async (_, url: string) => {
         await shell.openExternal(url)
+    })
+
+    // App update check
+    ipcMain.handle('check-for-update', async () => {
+        return checkForAppUpdate(app.getVersion())
     })
 }
