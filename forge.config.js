@@ -5,6 +5,7 @@ export default {
   packagerConfig: {
     asar: true,
     name: 'vrchat-world-manager',
+    icon: './assets/icon',
     extraResource: [
       './prisma/initial_database'
     ]
@@ -32,7 +33,7 @@ export default {
         ui: {
           locale: 'ja-JP',
         },
-        icon: './assets/dummy-icon.ico'
+        icon: './assets/icon.ico'
       }
     },
     {

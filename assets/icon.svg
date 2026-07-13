@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0c1a2e"/>
+      <stop offset="100%" stop-color="#132844"/>
+    </linearGradient>
+    <radialGradient id="bgGloss" cx="50%" cy="18%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#bae6fd"/>
+      <stop offset="45%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <radialGradient id="void" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="60%" stop-color="#0d1b3d"/>
+      <stop offset="100%" stop-color="#060d1f"/>
+    </radialGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="22" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <clipPath id="portalClip">
+      <ellipse cx="490" cy="512" rx="190" ry="278"/>
+    </clipPath>
+    <filter id="tileShadow" x="-60%" y="-60%" width="220%" height="220%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#020617" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <rect width="1024" height="1024" rx="224" fill="url(#bgGloss)"/>
+
+  <!-- portal glow ring -->
+  <g filter="url(#glow)">
+    <ellipse cx="490" cy="512" rx="190" ry="278" fill="none" stroke="url(#ring)" stroke-width="44"/>
+  </g>
+
+  <!-- portal void interior -->
+  <ellipse cx="490" cy="512" rx="166" ry="254" fill="url(#void)"/>
+
+  <!-- stars inside portal -->
+  <g clip-path="url(#portalClip)" fill="#ffffff">
+    <circle cx="410" cy="360" r="4" opacity="0.9"/>
+    <circle cx="540" cy="400" r="3" opacity="0.7"/>
+    <circle cx="450" cy="500" r="2.5" opacity="0.8"/>
+    <circle cx="580" cy="540" r="4" opacity="0.6"/>
+    <circle cx="420" cy="620" r="3" opacity="0.8"/>
+    <circle cx="500" cy="660" r="2.5" opacity="0.6"/>
+    <circle cx="480" cy="290" r="2.5" opacity="0.7"/>
+  </g>
+
+  <!-- world tiles emerged from the portal, growing as they approach the viewer -->
+  <g filter="url(#tileShadow)">
+    <rect x="0" y="0" width="104" height="104" rx="22" fill="#5eead4"
+          transform="translate(640 660) rotate(-12) translate(-52 -52)"/>
+    <rect x="0" y="0" width="150" height="150" rx="30" fill="#38bdf8"
+          transform="translate(742 556) rotate(10) translate(-75 -75)"/>
+    <rect x="0" y="0" width="196" height="196" rx="40" fill="#f472b6"
+          transform="translate(872 452) rotate(-6) translate(-98 -98)"/>
+  </g>
+</svg>
