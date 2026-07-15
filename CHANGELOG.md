@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0](https://github.com/yamato3010/vrchat-world-manager/compare/v1.1.0...v1.2.0) (2026-07-15)
+
+
+### Features
+
+* ✨ アプリアイコンを追加 ([f34dc0b](https://github.com/yamato3010/vrchat-world-manager/commit/f34dc0bd714e5698d2d38a83d959d27b2eccb9ba))
+* ✨ アプリアイコンを追加 ([c08ca54](https://github.com/yamato3010/vrchat-world-manager/commit/c08ca543037cc96ff3cbe7e293dec9f63bb7b4f6))
+
+
+### Bug Fixes
+
+* アップデート元をGithubのダウンロードページに変更 ([402f387](https://github.com/yamato3010/vrchat-world-manager/commit/402f38776116511b9cfdd6f000401960f1dfada6))
+* アップデート元をGithubのダウンロードページに変更 ([efbd65f](https://github.com/yamato3010/vrchat-world-manager/commit/efbd65f50cbb1f5cc95330dca0f22abc6afce2e6))
+
 ## [1.1.0](https://github.com/yamato3010/vrchat-world-manager/compare/v1.0.0...v1.1.0) (2026-07-10)
 
 
